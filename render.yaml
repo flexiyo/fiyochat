@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: fiyochat
+    env: node
+    region: oregon
+    buildCommand: "npm install"
+    startCommand: "node src/index.js"
+    plan: free
+    autoDeploy: true
+    healthCheckPath: "/api"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8000"
+      - key: MONGODB_CHAT_URI
+        value: "mongodb+srv://kaushalkrishna011:%40KauHeaven93043@chat.2g9fp.mongodb.net"
+      - key: AUTH_DB_URI
+        value: "postgresql://flexiyodb_owner:ym6gLaUX3ucj@ep-floral-hall-a1g00tgg-pooler.ap-southeast-1.aws.neon.tech/flexiyodb?sslmode=require"
