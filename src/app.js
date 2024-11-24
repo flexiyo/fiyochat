@@ -16,6 +16,7 @@ const io = new Server(server, {
   cors: {
     origin: process.env.ALLOWED_ORIGINS?.split(",") || [
       "http://localhost:8000",
+      "https://flexiyo.web.app"
     ],
     methods: ["GET", "POST"],
   },

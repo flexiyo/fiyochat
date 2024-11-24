@@ -4,15 +4,15 @@ services:
     env: node
     region: oregon
     buildCommand: "npm install"
-    startCommand: "node src/index.js"
+    startCommand: "node src/index.js"  # Ensure this points to your correct entry file
     plan: free
     autoDeploy: true
-    healthCheckPath: "/"
+    healthCheckPath: "/health"  # Ensure you have a /health route to check service health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: "8000"
+        value: "8000"  # This is the port Render will use for your service
       - key: MONGODB_CHAT_URI
         value: "mongodb+srv://kaushalkrishna011:%40KauHeaven93043@chat.2g9fp.mongodb.net"
       - key: AUTH_DB_URI
