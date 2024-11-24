@@ -12,7 +12,7 @@ connectToMongoServer()
       console.log(`Server is running on port ${PORT}`);
     });
 
-    app.on("error", (error) => {
+    server.on("error", (error) => {
       console.error("Server failed to listen :: ", error);
       throw error;
     });
