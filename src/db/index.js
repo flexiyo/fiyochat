@@ -22,6 +22,7 @@ export const connectToMongoServer = async () => {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       });
+      console.log("Database connected successfully.");
     }
   } catch (error) {
     console.error("Error connecting to MongoDB server:", error);

@@ -18,34 +18,39 @@ import { checkAccessToken } from "../package/index.d.js";
 
 export const setupSocketHandlers = asyncHandler(async (io) => {
   io.on("connection", async (socket) => {
-    const accessToken = socket.handshake.headers.fiyoat;
+    const accessToken = socket.handshake.auth.fiyoat;
 
     if (!accessToken) {
       socket.emit("error", { event: "connection", error: "Missing Access Token" });
+      console.log("Missing Access Token");
       socket.disconnect();
       return;
     }
 
     try {
-      const { message, userId } = await checkAccessToken(accessToken);
+      const { message, data } = await checkAccessToken(accessToken);
 
       if (message !== "ok") {
-        socket.emit("error", { event: "connection", error: "Invalid Access Token" });
+        socket.emit("error", { event: "connection", error: message });
+        console.log(message);
         socket.disconnect();
         return;
       }
 
-      socket.userRooms = await fetchUserRooms(userId);
+      socket.user = data;
+
+      socket.userRooms = await fetchUserRooms(socket.user.id);
 
       if (!socket.userRooms.length) {
         socket.emit("error", { event: "connection", error: "No rooms found" });
+        console.log("No rooms found");
         socket.disconnect();
         return;
       }
 
       socket.userRooms.forEach((roomId) => {
         socket.join(roomId);
-        socket.broadcast.to(roomId).emit("user_joined", userId);
+        socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
       });
 
       socket.to(socket.id).emit("roomsListResponse", socket.userRooms);

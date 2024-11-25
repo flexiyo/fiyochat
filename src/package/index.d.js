@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import postgres from "postgres";
 
-dotenv.config({ path: "./.env" });
+dotenv.config({ path: "../../.env" });
 
 /**
  * Verifies the given access token.
