@@ -3,7 +3,6 @@ import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
 import http from "http";
 import { setupSocketHandlers } from "./controllers/socket.controller.js";
-import { authMiddleware } from "./middlewares/auth.middleware.js";
 import roomRouter from "./routes/room.routes.js";
 
 import dotenv from "dotenv";
@@ -34,7 +33,6 @@ app.use(
 const allowedOrigins = ["http://localhost:3000", "https://flexiyo.web.app"];
 
 /** Middlewares */
-app.use(authMiddleware);
 app.use((req, res, next) => {
   const origin = req.get("Origin");
   const isApiRoute = req.path.startsWith("/api/v1");
