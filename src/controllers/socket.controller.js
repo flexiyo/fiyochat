@@ -14,16 +14,32 @@ import { fetchUserRooms } from "../utils/mongoHandler.js";
 import { validatePayload } from "../utils/validatePayload.js";
 import { emitToRoom } from "../utils/SocketEventEmitter.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { checkAccessToken } from "../package/index.d.js";
 
 export const setupSocketHandlers = asyncHandler(async (io) => {
-  io.on("connection", async (socket, userId) => {
+  io.on("connection", async (socket) => {
+    const accessToken = socket.handshake.headers.fiyoat;
+
+    if (!accessToken) {
+      socket.emit("error", { event: "connection", error: "Missing Access Token" });
+      socket.disconnect();
+      return;
+    }
+
     try {
-      // Fetch user rooms and join them
-      socket.userId = userId;
+      const { message, userId } = await checkAccessToken(accessToken);
+
+      if (message !== "ok") {
+        socket.emit("error", { event: "connection", error: "Invalid Access Token" });
+        socket.disconnect();
+        return;
+      }
+
       socket.userRooms = await fetchUserRooms(userId);
 
-      console.log(socket.userRooms);
       if (!socket.userRooms.length) {
+        socket.emit("error", { event: "connection", error: "No rooms found" });
+        socket.disconnect();
         return;
       }
 
@@ -31,8 +47,6 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         socket.join(roomId);
         socket.broadcast.to(roomId).emit("user_joined", userId);
       });
-
-      console.log(socket.id)
 
       socket.to(socket.id).emit("roomsListResponse", socket.userRooms);
 

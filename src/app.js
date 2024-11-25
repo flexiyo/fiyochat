@@ -16,7 +16,7 @@ const io = new Server(server, {
   cors: {
     origin: process.env.ALLOWED_ORIGINS?.split(",") || [
       "http://localhost:8000",
-      "https://flexiyo.web.app"
+      "https://flexiyo.web.app",
     ],
     methods: ["GET", "POST"],
   },
@@ -31,22 +31,20 @@ app.use(
   })
 );
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://flexiyo.web.app",
-];
+const allowedOrigins = ["http://localhost:3000", "https://flexiyo.web.app"];
 
 /** Middlewares */
 app.use(authMiddleware);
 app.use((req, res, next) => {
   const origin = req.get("Origin");
   const isApiRoute = req.path.startsWith("/api/v1");
-  
+
   if (isApiRoute && allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Credentials", "true");
     res.header(
       "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, fiyoat, fiyort"
     );
     res.header(
       "Access-Control-Allow-Methods",
@@ -69,11 +67,6 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Flexiyo Chat Service is live..." });
 });
-
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
 
 app.get("/api/v1", (req, res) => {
   res.status(200).json({ message: "Allowed: Access approved" });
