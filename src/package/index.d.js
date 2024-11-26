@@ -28,7 +28,6 @@ export const checkAccessToken = async (accessToken) => {
       if (error.name === "TokenExpiredError") {
         return { status: 401, message: "Access token has expired" };
       }
-      console.error(error);
       return { status: 401, message: "Invalid access token" };
     }
 
