@@ -22,7 +22,6 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
     if (!accessToken) {
       socket.emit("error", { event: "connection", error: "Missing Access Token" });
-      console.log("Missing Access Token");
       socket.disconnect();
       return;
     }
@@ -32,7 +31,6 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       if (message !== "ok") {
         socket.emit("error", { event: "connection", error: message });
-        console.log(message);
         socket.disconnect();
         return;
       }
@@ -43,7 +41,6 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       if (!socket.userRooms.length) {
         socket.emit("error", { event: "connection", error: "No rooms found" });
-        console.log("No rooms found");
         socket.disconnect();
         return;
       }
