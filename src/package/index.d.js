@@ -28,8 +28,8 @@ export const checkAccessToken = async (accessToken) => {
       if (error.name === "TokenExpiredError") {
         return { status: 401, message: "Access token has expired" };
       }
-      return { status: 401, message: "Invalid access token" };
       console.error(error);
+      return { status: 401, message: "Invalid access token" };
     }
 
     const result = await sql`
