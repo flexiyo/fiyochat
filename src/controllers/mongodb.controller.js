@@ -54,7 +54,7 @@ export const addMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw error;
+    throw new Error(`Error in addMessage: ${error}`);
   }
 };
 
@@ -76,7 +76,7 @@ export const removeMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw error;
+    throw new Error(`Error in removeMessage: ${error}`);
   }
 };
 
@@ -98,12 +98,14 @@ export const editMessage = async (payload) => {
     );
 
     if (!updatedDocument) {
-      throw new Error(`Message with ID ${messageId} not found.`);
+      return res
+        .status(404)
+        .json(new ApiResponse(404, null, "Unable to find or edit the message"));
     }
 
     return true;
   } catch (error) {
-    throw error;
+    throw new Error(`Error in editMessage: ${error}`);
   }
 };
 
@@ -121,7 +123,7 @@ export const seeMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw error;
+    throw new Error(`Error in seeMessage: ${error}`);
   }
 };
 
@@ -157,7 +159,7 @@ export const replyToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw error;
+    throw new Error(`Error in replyToMessage: ${error}`);
   }
 };
 
@@ -179,7 +181,7 @@ export const reactToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw error;
+    throw new Error(`Error in reactToMessage: ${error}`);
   }
 };
 
@@ -201,7 +203,7 @@ export const unreactToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw error;
+    throw new Error(`Error in unreactToMessage: ${error}`);
   }
 };
 
@@ -223,18 +225,18 @@ export const getMessages = async (payload) => {
 
     return { messages, hasMore };
   } catch (error) {
-    throw error;
+    throw new Error(`Error in getMessages: ${error}`);
   }
 };
 
 /* Room Related Controllers */
-export const addToFavourites = (payload) => {
+export const addToFavourites = async (payload) => {
   try {
     const { roomId, senderId, message, messageId } = payload;
 
     const roomDetailsModel = getRoomDetailsModel(roomId);
 
-    roomDetailsModel.findOneAndUpdate(
+    await roomDetailsModel.findOneAndUpdate(
       { "members.id": senderId },
       {
         $push: {
@@ -248,7 +250,7 @@ export const addToFavourites = (payload) => {
       { new: true }
     );
   } catch (error) {
-    throw error;
+    throw new Error(`Error in addToFavourites: ${error}`);
   }
 };
 
@@ -268,7 +270,7 @@ export const removeFromFavourites = (payload) => {
       { new: true }
     );
   } catch (error) {
-    throw error;
+    throw new Error(`Error in removeFromFavourites: ${error}`);
   }
 };
 
@@ -365,7 +367,7 @@ export const createRoomCollection = async (req, res) => {
       )
     );
   } catch (error) {
-    throw error;
+    throw new Error(`Error in createRoomCollection: ${error}`);
   }
 };
 
@@ -384,7 +386,7 @@ export const updateRoomDetails = async (payload) => {
     const roomDetailsModel = getRoomDetailsModel(roomId);
     await roomDetailsModel.updateOne({ id: roomId }, { $set: { memberIds } });
   } catch (error) {
-    throw error;
+    throw new Error(`Error in updateRoomDetails: ${error}`);
   }
 };
 
@@ -394,6 +396,6 @@ export const getRoomDetails = async (roomId) => {
     const roomDetails = await roomDetailsModel.findOne({ id: roomId });
     return roomDetails;
   } catch (error) {
-    throw error;
+    throw new Error(`Error in getRoomDetails: ${error}`);
   }
 };

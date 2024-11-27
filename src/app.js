@@ -1,8 +1,9 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import { Server } from "socket.io";
 import http from "http";
+import { Server } from "socket.io";
 import { setupSocketHandlers } from "./controllers/socket.controller.js";
+import { ApiResponse } from "./utils/ApiResponse.js";
 import roomRouter from "./routes/room.routes.js";
 
 import dotenv from "dotenv";
@@ -57,17 +58,17 @@ app.use((req, res, next) => {
   } else if (!isApiRoute) {
     next();
   } else {
-    res.status(403).json({ message: "Forbidden: Access denied" });
+    res.status(403).json(new ApiResponse(403, null, "Forbidden: Access Denied"));
   }
 });
 
 /** API Routes */
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "Flexiyo Chat Service is live..." });
+  res.status(200).json(new ApiResponse(200, null, "Flexiyo Chat Server is live..."));
 });
 
 app.get("/api/v1", (req, res) => {
-  res.status(200).json({ message: "Allowed: Access approved" });
+  res.status(200).json(new ApiResponse(200, null, "Allowed: Access approved"));
 });
 
 app.use("/api/v1/rooms", roomRouter);

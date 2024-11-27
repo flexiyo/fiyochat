@@ -67,7 +67,7 @@ export const checkAccessToken = async (accessToken) => {
       },
     };
   } catch (error) {
-    throw new Error(`Failed to check access token: ${error}`);
+    throw new Error(`Error in checkAccessToken: ${error}`);
   } finally {
     await sql.end();
   }
@@ -87,6 +87,8 @@ export const registerUserRooms = async (roomId, members) => {
     );
     return true;
   } catch (error) {
-    throw new Error(`Failed to register rooms: ${error}`);
+    throw new Error(`Error in registerUserRooms: ${error}`);
+  } finally {
+    await sql.end();
   }
 };
