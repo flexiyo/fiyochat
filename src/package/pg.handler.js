@@ -14,7 +14,7 @@ dotenv.config({ path: "../../.env" });
  *   verification, the message, and the user id associated with the token.
  */
 export const checkAccessToken = async (accessToken) => {
-    const sql = postgres(process.env.AUTH_DB_URI);
+  const sql = postgres(process.env.AUTH_DB_URI);
 
   try {
     if (!accessToken) {
@@ -66,11 +66,44 @@ export const checkAccessToken = async (accessToken) => {
       },
     };
   } catch (error) {
-    return {
-      status: 401,
-      message: "Access token verification failed: " + error.message,
-    };
+    throw new Error(`Failed to check access token: ${error}`);
   } finally {
     await sql.end();
+  }
+};
+
+export const registerUserRooms = async (roomId, members) => {
+  try {
+    const sql = postgres(process.env.AUTH_DB_URI);
+
+    await sql.unsafe(
+      `
+      UPDATE users
+      SET rooms = COALESCE(rooms, '[]'::jsonb) || to_jsonb($1::text)
+      WHERE id = ANY($2::uuid[])
+      `,
+      [roomId, members]
+    );
+
+    console.log(`Room ${roomId} successfully registered for members: ${members}`);
+  } catch (error) {
+    throw new Error(`Failed to register rooms: ${error}`);
+  }
+};
+
+
+export const fetchUserRooms = async (userId) => {
+  try {
+    const sql = postgres(process.env.AUTH_DB_URI);
+
+    const result = await sql`
+      SELECT rooms
+      FROM users
+      WHERE id = ${userId};
+    `;
+
+    return result[0]?.rooms || [];
+  } catch (error) {
+    throw new Error(`Failed to fetch user rooms: ${error}`);
   }
 };

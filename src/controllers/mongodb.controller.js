@@ -6,6 +6,7 @@ import {
   generateCollectionName,
   getDatabaseName,
 } from "../utils/mongoHandler.js";
+import { registerUserRooms } from "../package/pg.handler.js";
 
 /* Utility Functions */
 const getMessageStockModel = (collectionName) => {
@@ -53,8 +54,7 @@ export const addMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    console.error("Error saving message:", error);
-    throw new Error(`Failed to add message: ${error.message}`);
+    throw new Error(`Failed to add message: ${error}`);
   }
 };
 
@@ -76,8 +76,7 @@ export const removeMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    console.error("Error removing message:", error);
-    throw new Error(`Failed to remove message: ${error.message}`);
+    throw new Error(`Failed to remove message: ${error}`);
   }
 };
 
@@ -104,8 +103,7 @@ export const editMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    console.error("Error editing message:", error);
-    throw new Error(`Failed to edit message: ${error.message}`);
+    throw new Error(`Failed to edit message: ${error}`);
   }
 };
 
@@ -123,8 +121,7 @@ export const seeMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    console.error("Error seeing message:", error);
-    throw new Error(`Failed to see message: ${error.message}`);
+    throw new Error(`Failed to see message: ${error}`);
   }
 };
 
@@ -160,8 +157,7 @@ export const replyToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    console.error("Error replying to message:", error);
-    throw new Error(`Failed to reply to message: ${error.message}`);
+    throw new Error(`Failed to reply to message: ${error}`);
   }
 };
 
@@ -183,8 +179,7 @@ export const reactToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    console.error("Error reacting to message:", error);
-    throw new Error(`Failed to react to message: ${error.message}`);
+    throw new Error(`Failed to react to message: ${error}`);
   }
 };
 
@@ -206,8 +201,7 @@ export const unreactToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    console.error("Error unreacting to message:", error);
-    throw new Error(`Failed to unreact to message: ${error.message}`);
+    throw new Error(`Failed to unreact to message: ${error}`);
   }
 };
 
@@ -229,8 +223,7 @@ export const getMessages = async (payload) => {
 
     return { messages, hasMore };
   } catch (error) {
-    console.error("Error getting messages:", error);
-    throw new Error(`Failed to get messages: ${error.message}`);
+    throw new Error(`Failed to get messages: ${error}`);
   }
 };
 
@@ -255,8 +248,7 @@ export const addToFavourites = (payload) => {
       { new: true }
     );
   } catch (error) {
-    console.error("Error adding to favourites:", error);
-    throw new Error(`Failed to add to favourites: ${error.message}`);
+    throw new Error(`Failed to add to favourites: ${error}`);
   }
 };
 
@@ -276,19 +268,18 @@ export const removeFromFavourites = (payload) => {
       { new: true }
     );
   } catch (error) {
-    console.error("Error removing from favourites:", error);
-    throw new Error(`Failed to remove from favourites: ${error.message}`);
+    throw new Error(`Failed to remove from favourites: ${error}`);
   }
 };
 
 export const createRoomCollection = async (req, res) => {
   try {
-    const { members, roomType } = req.body;
+    const { roomType, memberIds } = req.body;
 
-    if (!Array.isArray(members) || members.length === 0) {
+    if (!Array.isArray(memberIds) || memberIds.length === 0) {
       return res
         .status(400)
-        .json({ message: "Invalid or missing members array." });
+        .json(new ApiRespnse(400, null, "Invalid or missing memberIds array."));
     }
 
     const adminDb = mongoose.connection.db.admin();
@@ -351,27 +342,30 @@ export const createRoomCollection = async (req, res) => {
     const roomDetails = await roomDetailsModel.create({
       id: collectionName,
       type: roomType,
-      members: members.map((member) => {
-        if (!member.userId) {
-          throw new Error(
-            `Invalid member data: Missing userId for member ${JSON.stringify(
-              member
-            )}`
-          );
+      members: memberIds.map((memberId) => {
+        if (!memberId) {
+          throw new Error("Missing member id");
         }
         return {
-          id: member.userId,
+          id: memberId,
         };
       }),
     });
 
-    return res.status(200).json({
-      databaseName,
-      roomDetails,
-    });
+    await registerUserRooms(collectionName, memberIds);
+
+    return res.status(200).json(
+      new ApiRespnse(
+        200,
+        {
+          databaseName,
+          roomDetails,
+        },
+        "Room created successfully"
+      )
+    );
   } catch (error) {
-    console.error("Error creating collection:", error);
-    throw error;
+    throw new Error(`Failed to create room: ${error}`);
   }
 };
 
@@ -380,19 +374,17 @@ export const deleteRoomCollection = async (collectionName) => {
     const db = mongoose.connection.useDb(getDatabaseName(collectionName));
     await db.dropCollection(collectionName);
   } catch (error) {
-    console.error("Error deleting collection:", error);
-    throw new Error(`Failed to delete collection: ${error.message}`);
+    throw new Error(`Failed to delete collection: ${error}`);
   }
 };
 
 export const updateRoomDetails = async (payload) => {
   try {
-    const { roomId, members } = payload;
+    const { roomId, memberIds } = payload;
     const roomDetailsModel = getRoomDetailsModel(roomId);
-    await roomDetailsModel.updateOne({ id: roomId }, { $set: { members } });
+    await roomDetailsModel.updateOne({ id: roomId }, { $set: { memberIds } });
   } catch (error) {
-    console.error("Error updating room details:", error);
-    throw new Error(`Failed to update room details: ${error.message}`);
+    throw new Error(`Failed to update room details: ${error}`);
   }
 };
 
@@ -402,7 +394,6 @@ export const getRoomDetails = async (roomId) => {
     const roomDetails = await roomDetailsModel.findOne({ id: roomId });
     return roomDetails;
   } catch (error) {
-    console.error("Error getting room details:", error);
-    throw new Error(`Failed to get room details: ${error.message}`);
+    throw new Error(`Failed to get room details: ${error}`);
   }
 };

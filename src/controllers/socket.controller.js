@@ -10,18 +10,20 @@ import {
   getMessages,
 } from "./mongodb.controller.js";
 
-import { fetchUserRooms } from "../utils/mongoHandler.js";
 import { validatePayload } from "../utils/validatePayload.js";
 import { emitToRoom } from "../utils/SocketEventEmitter.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { checkAccessToken } from "../package/index.d.js";
+import { checkAccessToken, fetchUserRooms } from "../package/pg.handler.js";
 
 export const setupSocketHandlers = asyncHandler(async (io) => {
   io.on("connection", async (socket) => {
     const accessToken = socket.handshake.auth.fiyoat;
 
     if (!accessToken) {
-      socket.emit("error", { event: "connection", error: "Missing Access Token" });
+      socket.emit("error", {
+        event: "connection",
+        error: "Missing Access Token",
+      });
       socket.disconnect();
       return;
     }
@@ -62,7 +64,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           emitToRoom(socket, "typing", roomId, { senderId });
         } catch (error) {
           console.error("Error in is_typing:", error);
-          socket.emit("error", { event: "is_typing", error: error.message });
+          socket.emit("error", { event: "is_typing", error });
         }
       });
 
@@ -83,7 +85,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           }
         } catch (error) {
           console.error("Error in send_message:", error);
-          socket.emit("error", { event: "send_message", error: error.message });
+          socket.emit("error", { event: "send_message", error });
         }
       });
 
@@ -105,7 +107,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           console.error("Error in unsend_message:", error);
           socket.emit("error", {
             event: "unsend_message",
-            error: error.message,
+            error,
           });
         }
       });
@@ -140,7 +142,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           }
         } catch (error) {
           console.error("Error in edit_message:", error);
-          socket.emit("error", { event: "edit_message", error: error.message });
+          socket.emit("error", { event: "edit_message", error });
         }
       });
 
@@ -157,7 +159,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           }
         } catch (error) {
           console.error("Error in see_message:", error);
-          socket.emit("error", { event: "see_message", error: error.message });
+          socket.emit("error", { event: "see_message", error });
         }
       });
 
@@ -193,7 +195,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           console.error("Error in reply_to_message:", error);
           socket.emit("error", {
             event: "reply_to_message",
-            error: error.message,
+            error,
           });
         }
       });
@@ -222,7 +224,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           console.error("Error in react_to_message:", error);
           socket.emit("error", {
             event: "react_to_message",
-            error: error.message,
+            error,
           });
         }
       });
@@ -251,7 +253,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           console.error("Error in unreact_to_message:", error);
           socket.emit("error", {
             event: "unreact_to_message",
-            error: error.message,
+            error,
           });
         }
       });
@@ -277,7 +279,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           console.error("Error in add_to_favourites:", error);
           socket.emit("error", {
             event: "add_to_favourites",
-            error: error.message,
+            error,
           });
         }
       });
@@ -295,20 +297,21 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           }
         } catch (error) {
           console.error("Error in get_messages:", error);
-          socket.emit("error", { event: "get_messages", error: error.message });
+          socket.emit("error", { event: "get_messages", error });
         }
       });
 
       // Handle Disconnection
       socket.on("disconnect", () => {
-        // socket.userRooms.forEach((roomId) => {
-        //   socket.leave(roomId);
-        //   socket.broadcast.to(roomId).emit("user_left", userId);
-        // });
+        if (!socket.userRooms.length) return;
+        socket.userRooms.forEach((roomId) => {
+          socket.leave(roomId);
+          socket.broadcast.to(roomId).emit("user_left", userId);
+        });
       });
     } catch (error) {
       console.error("Error during socket connection:", error);
-      socket.emit("error", { event: "connection", error: error.message });
+      socket.emit("error", { event: "connection", error });
     }
   });
 });

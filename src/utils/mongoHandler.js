@@ -24,15 +24,3 @@ export const getDatabaseName = (collectionName) =>
     .toString()
     .slice(0, 5)
     .replace(/(\d{4})(\d)/, "$1_$2");
-
-export const fetchUserRooms = async (userId) => {
-  try {
-    const rooms = await RoomDetails.find({ members: { $in: [userId] } }).select(
-      "id"
-    );
-    return rooms.map((room) => room.id);
-  } catch (error) {
-    console.error("Error fetching user rooms:", error);
-    return [];
-  }
-};
