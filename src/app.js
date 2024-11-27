@@ -70,7 +70,7 @@ app.get("/api/v1", (req, res) => {
   res.status(200).json({ message: "Allowed: Access approved" });
 });
 
-app.use("/api/v1/room", roomRouter);
+app.use("/api/v1/rooms", roomRouter);
 
 /** Setup WebSocket Handlers */
 setupSocketHandlers(io);

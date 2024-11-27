@@ -32,7 +32,7 @@ export const checkAccessToken = async (accessToken) => {
     }
 
     const result = await sql`
-      SELECT id, full_name, username, email, gender, dob, profession, bio, account_type, is_private, avatar, banner, created_at
+      SELECT id, full_name, username, email, gender, dob, profession, bio, account_type, is_private, avatar, banner, created_at, rooms
       FROM users
       WHERE id = ${payload.userId} AND tokens->>'at' = ${accessToken}
     `;
@@ -63,6 +63,7 @@ export const checkAccessToken = async (accessToken) => {
         avatar: user.avatar,
         banner: user.banner,
         createdAt: user.created_at,
+        rooms: user.rooms,
       },
     };
   } catch (error) {
@@ -84,26 +85,8 @@ export const registerUserRooms = async (roomId, members) => {
       `,
       [roomId, members]
     );
-
-    console.log(`Room ${roomId} successfully registered for members: ${members}`);
+    return true;
   } catch (error) {
     throw new Error(`Failed to register rooms: ${error}`);
-  }
-};
-
-
-export const fetchUserRooms = async (userId) => {
-  try {
-    const sql = postgres(process.env.AUTH_DB_URI);
-
-    const result = await sql`
-      SELECT rooms
-      FROM users
-      WHERE id = ${userId};
-    `;
-
-    return result[0]?.rooms || [];
-  } catch (error) {
-    throw new Error(`Failed to fetch user rooms: ${error}`);
   }
 };

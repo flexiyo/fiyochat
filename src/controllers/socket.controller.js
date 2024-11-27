@@ -13,7 +13,7 @@ import {
 import { validatePayload } from "../utils/validatePayload.js";
 import { emitToRoom } from "../utils/SocketEventEmitter.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { checkAccessToken, fetchUserRooms } from "../package/pg.handler.js";
+import { checkAccessToken } from "../package/pg.handler.js";
 
 export const setupSocketHandlers = asyncHandler(async (io) => {
   io.on("connection", async (socket) => {
@@ -39,20 +39,18 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.user = data;
 
-      socket.userRooms = await fetchUserRooms(socket.user.id);
-
-      if (!socket.userRooms.length) {
+      if (!socket.user.rooms.length) {
         socket.emit("error", { event: "connection", error: "No rooms found" });
         socket.disconnect();
         return;
       }
 
-      socket.userRooms.forEach((roomId) => {
+      socket.user.rooms.forEach((roomId) => {
         socket.join(roomId);
         socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
       });
 
-      socket.to(socket.id).emit("roomsListResponse", socket.userRooms);
+      socket.to(socket.id).emit("roomsListResponse", socket.user.rooms);
 
       // Handle Message Events
       socket.on("is_typing", (payload) => {
@@ -303,10 +301,10 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       // Handle Disconnection
       socket.on("disconnect", () => {
-        if (!socket.userRooms.length) return;
-        socket.userRooms.forEach((roomId) => {
+        if (!socket.user.rooms.length) return;
+        socket.user.rooms.forEach((roomId) => {
           socket.leave(roomId);
-          socket.broadcast.to(roomId).emit("user_left", userId);
+          socket.broadcast.to(roomId).emit("user_left", socket.user.id);
         });
       });
     } catch (error) {
