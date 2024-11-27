@@ -54,7 +54,7 @@ export const addMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Failed to add message: ${error}`);
+    throw error;
   }
 };
 
@@ -76,7 +76,7 @@ export const removeMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Failed to remove message: ${error}`);
+    throw error;
   }
 };
 
@@ -103,7 +103,7 @@ export const editMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Failed to edit message: ${error}`);
+    throw error;
   }
 };
 
@@ -121,7 +121,7 @@ export const seeMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Failed to see message: ${error}`);
+    throw error;
   }
 };
 
@@ -157,7 +157,7 @@ export const replyToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Failed to reply to message: ${error}`);
+    throw error;
   }
 };
 
@@ -179,7 +179,7 @@ export const reactToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Failed to react to message: ${error}`);
+    throw error;
   }
 };
 
@@ -201,7 +201,7 @@ export const unreactToMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Failed to unreact to message: ${error}`);
+    throw error;
   }
 };
 
@@ -223,7 +223,7 @@ export const getMessages = async (payload) => {
 
     return { messages, hasMore };
   } catch (error) {
-    throw new Error(`Failed to get messages: ${error}`);
+    throw error;
   }
 };
 
@@ -248,7 +248,7 @@ export const addToFavourites = (payload) => {
       { new: true }
     );
   } catch (error) {
-    throw new Error(`Failed to add to favourites: ${error}`);
+    throw error;
   }
 };
 
@@ -268,7 +268,7 @@ export const removeFromFavourites = (payload) => {
       { new: true }
     );
   } catch (error) {
-    throw new Error(`Failed to remove from favourites: ${error}`);
+    throw error;
   }
 };
 
@@ -365,7 +365,7 @@ export const createRoomCollection = async (req, res) => {
       )
     );
   } catch (error) {
-    throw new Error(`Failed to create room: ${error}`);
+    throw error;
   }
 };
 
@@ -374,7 +374,7 @@ export const deleteRoomCollection = async (collectionName) => {
     const db = mongoose.connection.useDb(getDatabaseName(collectionName));
     await db.dropCollection(collectionName);
   } catch (error) {
-    throw new Error(`Failed to delete collection: ${error}`);
+    throw error;
   }
 };
 
@@ -384,7 +384,7 @@ export const updateRoomDetails = async (payload) => {
     const roomDetailsModel = getRoomDetailsModel(roomId);
     await roomDetailsModel.updateOne({ id: roomId }, { $set: { memberIds } });
   } catch (error) {
-    throw new Error(`Failed to update room details: ${error}`);
+    throw error;
   }
 };
 
@@ -394,6 +394,6 @@ export const getRoomDetails = async (roomId) => {
     const roomDetails = await roomDetailsModel.findOne({ id: roomId });
     return roomDetails;
   } catch (error) {
-    throw new Error(`Failed to get room details: ${error}`);
+    throw error;
   }
 };

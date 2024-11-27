@@ -61,8 +61,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const { roomId, senderId } = payload;
           emitToRoom(socket, "typing", roomId, { senderId });
         } catch (error) {
-          console.error("Error in is_typing:", error);
           socket.emit("error", { event: "is_typing", error });
+          throw error;
         }
       });
 
@@ -82,8 +82,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             });
           }
         } catch (error) {
-          console.error("Error in send_message:", error);
           socket.emit("error", { event: "send_message", error });
+          throw error;
         }
       });
 
@@ -102,11 +102,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             });
           }
         } catch (error) {
-          console.error("Error in unsend_message:", error);
           socket.emit("error", {
             event: "unsend_message",
             error,
           });
+          throw error;
         }
       });
 
@@ -139,8 +139,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             });
           }
         } catch (error) {
-          console.error("Error in edit_message:", error);
           socket.emit("error", { event: "edit_message", error });
+          throw error;
         }
       });
 
@@ -156,8 +156,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             emitToRoom(socket, "message_seen", roomId, { senderId, messageId });
           }
         } catch (error) {
-          console.error("Error in see_message:", error);
           socket.emit("error", { event: "see_message", error });
+          throw error;
         }
       });
 
@@ -190,11 +190,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             });
           }
         } catch (error) {
-          console.error("Error in reply_to_message:", error);
           socket.emit("error", {
             event: "reply_to_message",
             error,
           });
+          throw error;
         }
       });
 
@@ -219,11 +219,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             });
           }
         } catch (error) {
-          console.error("Error in react_to_message:", error);
           socket.emit("error", {
             event: "react_to_message",
             error,
           });
+          throw error;
         }
       });
 
@@ -248,11 +248,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             });
           }
         } catch (error) {
-          console.error("Error in unreact_to_message:", error);
           socket.emit("error", {
             event: "unreact_to_message",
             error,
           });
+          throw error;
         }
       });
 
@@ -274,11 +274,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             socket.emit("message_favourited", { userId, messageId });
           }
         } catch (error) {
-          console.error("Error in add_to_favourites:", error);
           socket.emit("error", {
             event: "add_to_favourites",
             error,
           });
+          throw error;
         }
       });
 
@@ -294,8 +294,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             emitToRoom(socket, "messages", roomId, result);
           }
         } catch (error) {
-          console.error("Error in get_messages:", error);
           socket.emit("error", { event: "get_messages", error });
+          throw error;
         }
       });
 
@@ -308,8 +308,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         });
       });
     } catch (error) {
-      console.error("Error during socket connection:", error);
       socket.emit("error", { event: "connection", error });
+      throw error;
     }
   });
 });
