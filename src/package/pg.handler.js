@@ -81,10 +81,9 @@ export const registerUserRooms = async (roomId, memberIds) => {
   try {
     await sql.unsafe(
       `
-      UPDATE users
+       UPDATE users
       SET rooms = COALESCE(rooms, '[]'::jsonb) || to_jsonb($1::text)
       WHERE id = ANY($2::uuid[])
-        AND NOT (rooms @> to_jsonb($1::text));
       `,
       [roomId, memberIds]
     );
