@@ -46,7 +46,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         return;
       }
 
-      let allRoomDetails = [];
+      let allRoomDetails;
 
       (async () => {
         const roomDetailsPromises = socket.user?.rooms?.map(async (roomId) => {
@@ -55,7 +55,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           return getRoomDetails(roomId);
         });
 
-        allRoomDetails = await Promise.all(roomDetailsPromises || []);
+        Array(allRoomDetails) = await Promise.all(roomDetailsPromises || []);
 
         socket.emit("roomsListResponse", allRoomDetails);
       })();
