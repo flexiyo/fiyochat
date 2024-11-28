@@ -222,12 +222,12 @@ export const getLatestMessages = async (payload) => {
     }
 
     // Query to get the latest document
-    const latestMessageStock = await messageStockModel
+    const messages = await messageStockModel
       .findOne({})
       .sort({ _id: -1 })
       .lean();
 
-    return latestMessageStock || null;
+    return { messages } || null;
   } catch (error) {
     throw new Error(`Error in getMessages: ${error}`);
   }
@@ -285,7 +285,9 @@ export const createRoomCollection = async (req, res) => {
     if (!Array.isArray(memberIds) || memberIds.length === 0) {
       return res
         .status(400)
-        .json(new ApiResponse(400, null, "Invalid or missing memberIds array."));
+        .json(
+          new ApiResponse(400, null, "Invalid or missing memberIds array.")
+        );
     }
 
     const adminDb = mongoose.connection.db.admin();
