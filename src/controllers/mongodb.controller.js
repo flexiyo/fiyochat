@@ -221,14 +221,16 @@ export const getMessages = async (payload) => {
       .skip(skipCount)
       .limit(pageSize);
 
-    const totalMessages = await messageStockModel.countDocuments();
-    const hasMore = skipCount + messages.length < totalMessages;
+    if (!messages.length) {
+      return null;
+    }
 
-    return { messages, hasMore };
+    return { messages };
   } catch (error) {
     throw new Error(`Error in getMessages: ${error}`);
   }
 };
+
 
 /* Room Related Controllers */
 export const addToFavourites = async (payload) => {
