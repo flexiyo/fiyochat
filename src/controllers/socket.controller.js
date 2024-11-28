@@ -46,15 +46,19 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         return;
       }
 
-      let allRoomDetails;
+      let allRoomDetails = [];
 
-      socket.user?.rooms?.forEach(async (roomId) => {
-        socket.join(roomId);
-        socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
-        allRoomDetails.push(await getRoomDetails(roomId));
-      });
+      (async () => {
+        const roomDetailsPromises = socket.user?.rooms?.map(async (roomId) => {
+          socket.join(roomId);
+          socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
+          return getRoomDetails(roomId);
+        });
 
-      socket.emit("roomsListResponse", allRoomDetails);
+        allRoomDetails = await Promise.all(roomDetailsPromises || []);
+
+        socket.emit("roomsListResponse", allRoomDetails);
+      })();
 
       // Handle Message Events
       socket.on("is_typing", (payload) => {
