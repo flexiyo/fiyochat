@@ -209,7 +209,7 @@ export const unreactToMessage = async (payload) => {
 
 export const getMessages = async (payload) => {
   try {
-    const { roomId, page, pageSize } = payload;
+    const { roomId, page = 0, pageSize = 10 } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
     const skipCount = page * pageSize;

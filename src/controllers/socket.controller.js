@@ -39,13 +39,13 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.user = data;
 
-      if (!socket.user.rooms.length) {
+      if (!socket.user?.rooms.length) {
         socket.emit("error", { event: "connection", error: "No rooms found" });
         socket.disconnect();
         return;
       }
 
-      socket.user.rooms.forEach((roomId) => {
+      socket.user?.rooms.forEach((roomId) => {
         socket.join(roomId);
         socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
       });
