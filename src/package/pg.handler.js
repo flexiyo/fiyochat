@@ -77,7 +77,7 @@ export const checkAccessToken = async (accessToken) => {
   }
 };
 
-export const registerUserRooms = async (roomId, members) => {
+export const registerUserRooms = async (roomId, memberIds) => {
   try {
     await sql.unsafe(
       `
@@ -86,10 +86,10 @@ export const registerUserRooms = async (roomId, members) => {
       WHERE id = ANY($2::uuid[])
         AND NOT (rooms @> to_jsonb($1::text));
       `,
-      [roomId, members]
+      [roomId, memberIds]
     );
     return true;
   } catch (error) {
-    throw new Error(`Database operation failed: ${error.message}`);
+    throw new Error(`Error in registerUserRooms: ${error}`);
   }
 };

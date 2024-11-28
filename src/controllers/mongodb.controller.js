@@ -355,12 +355,7 @@ export const createRoomCollection = async (req, res) => {
       }),
     });
 
-    const result = await registerUserRooms(collectionName, memberIds);
-
-    if(!result){
-      await deleteRoomCollection(collectionName);
-      return res.status(500).json(new ApiResponse(500, null, "Failed to register user rooms"));
-    }
+    await registerUserRooms(collectionName, memberIds);
 
     return res.status(200).json(
       new ApiResponse(
