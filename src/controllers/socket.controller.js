@@ -50,7 +50,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
       });
 
-      socket.to(socket.id).emit("roomsListResponse", socket.user.rooms);
+      socket.emit("roomsListResponse", socket.user.rooms);
 
       // Handle Message Events
       socket.on("is_typing", (payload) => {
