@@ -221,15 +221,18 @@ export const getLatestMessages = async (payload) => {
       throw new Error(`Could not retrieve model for roomId ${roomId}`);
     }
 
-    // Query to get the latest document
     const messages = await messageStockModel
       .findOne({})
       .sort({ _id: -1 })
       .lean();
 
+    if (messages && messages.id.toString() === roomId.toString()) {
+      return null;
+    }
+
     return { messages } || null;
   } catch (error) {
-    throw new Error(`Error in getMessages: ${error}`);
+    throw new Error(`Error in getLatestMessages: ${error.message}`);
   }
 };
 
