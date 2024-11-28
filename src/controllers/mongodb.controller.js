@@ -227,8 +227,7 @@ export const getMessages = async (payload) => {
       .find({})
       .sort({ _id: -1 })
       .skip(skipCount)
-      .limit(pageSize)
-      .lean();
+      .limit(pageSize);
 
     if (!messages.length) {
       return null;
