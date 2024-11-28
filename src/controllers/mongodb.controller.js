@@ -227,10 +227,10 @@ export const getLatestMessages = async (payload) => {
       .lean();
 
     if (messages && messages.id.toString() === roomId.toString()) {
-      return null;
+      return { messages: null };
     }
 
-    return { messages } || null;
+    return { messages };
   } catch (error) {
     throw new Error(`Error in getLatestMessages: ${error.message}`);
   }
