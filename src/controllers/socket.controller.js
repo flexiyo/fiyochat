@@ -49,16 +49,14 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
       let allRoomDetails = [];
 
       (async () => {
-        const roomDetailsPromises = socket.user?.rooms?.map(
-          async (roomId) => {
-            socket.join(roomId);
-            socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
+        const roomDetailsPromises = socket.user?.rooms?.map(async (roomId) => {
+          socket.join(roomId);
+          socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
 
-            const roomDetails = await getRoomDetails(roomId);
-            const { messages } = await getMessages(roomId);
-            return { ...roomDetails, messages };
-          }
-        );
+          const roomDetails = await getRoomDetails(roomId);
+          const { messages } = await getMessages({ roomId });
+          return { ...roomDetails, messages };
+        });
 
         allRoomDetails = await Promise.all(roomDetailsPromises || []);
         socket.emit("roomsListResponse", allRoomDetails);
