@@ -7,7 +7,7 @@ import {
   reactToMessage,
   unreactToMessage,
   addToFavourites,
-  getMessages,
+  getLatestMessages,
   getRoomDetails,
 } from "./mongodb.controller.js";
 
@@ -54,7 +54,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
 
           const roomDetails = await getRoomDetails(roomId);
-          const { messages } = await getMessages({ roomId });
+          const { messages } = await getLatestMessages({ roomId });
           return { ...roomDetails, messages };
         });
 
@@ -297,7 +297,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const requiredFields = ["roomId"];
           validatePayload(payload, requiredFields);
 
-          const result = await getMessages(payload);
+          const result = await getLatestMessages(payload);
           const { roomId } = payload;
 
           if (result) {

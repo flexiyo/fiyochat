@@ -208,9 +208,9 @@ export const unreactToMessage = async (payload) => {
   }
 };
 
-export const getMessages = async (payload) => {
+export const getLatestMessages = async (payload) => {
   try {
-    const { roomId, page = 0, pageSize = 10 } = payload;
+    const { roomId } = payload;
 
     if (!roomId) {
       throw new Error("roomId is required.");
@@ -221,24 +221,17 @@ export const getMessages = async (payload) => {
       throw new Error(`Could not retrieve model for roomId ${roomId}`);
     }
 
-    const skipCount = page * pageSize;
-
-    const messages = await messageStockModel
-      .find({})
+    // Query to get the latest document
+    const latestMessageStock = await messageStockModel
+      .findOne({})
       .sort({ _id: -1 })
-      .skip(skipCount)
-      .limit(pageSize);
+      .lean();
 
-    if (!messages.length) {
-      return null;
-    }
-
-    return { messages };
+    return latestMessageStock || null;
   } catch (error) {
     throw new Error(`Error in getMessages: ${error}`);
   }
 };
-
 
 /* Room Related Controllers */
 export const addToFavourites = async (payload) => {
