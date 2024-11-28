@@ -15,7 +15,7 @@ dotenv.config({ path: "../../.env" });
  */
 export const checkAccessToken = async (accessToken) => {
   const sql = postgres({
-    connection: process.env.AUTH_DB_URI,
+    connection: process.env.AUTH_DB_URI,  
     max: 20,
     idle_timeout: 5,
     connect_timeout: 5,
