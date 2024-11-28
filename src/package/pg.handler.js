@@ -81,7 +81,7 @@ export const registerUserRooms = async (roomId, memberIds) => {
   try {
     await sql.unsafe(
       `
-       UPDATE users
+      UPDATE users
       SET rooms = COALESCE(rooms, '[]'::jsonb) || to_jsonb($1::text)
       WHERE id = ANY($2::uuid[])
       `,
@@ -89,6 +89,6 @@ export const registerUserRooms = async (roomId, memberIds) => {
     );
     return true;
   } catch (error) {
-    throw new Error(`Error in registerUserRooms: ${error}`);
+    throw new Error(`Database operation failed: ${error.message}`);
   }
 };
