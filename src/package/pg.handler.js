@@ -14,7 +14,12 @@ dotenv.config({ path: "../../.env" });
  *   verification, the message, and the user id associated with the token.
  */
 export const checkAccessToken = async (accessToken) => {
-  const sql = postgres(process.env.AUTH_DB_URI);
+  const sql = postgres({
+    connection: process.env.AUTH_DB_URI,
+    max: 20,
+    idle_timeout: 5,
+    connect_timeout: 5,
+  });
 
   try {
     if (!accessToken) {
@@ -74,9 +79,13 @@ export const checkAccessToken = async (accessToken) => {
 };
 
 export const registerUserRooms = async (roomId, members) => {
-  const sql = postgres(process.env.AUTH_DB_URI);
+  const sql = postgres({
+    connection: process.env.AUTH_DB_URI,
+    max: 20,
+    idle_timeout: 5,
+    connect_timeout: 5,
+  });
   try {
-
     await sql.unsafe(
       `
       UPDATE users
@@ -87,8 +96,6 @@ export const registerUserRooms = async (roomId, members) => {
     );
     return true;
   } catch (error) {
-    throw new Error(`Error in registerUserRooms: ${error}`);
-  } finally {
-    await sql.end();
+    throw new Error(`Database operation failed: ${error.message}`);
   }
 };
