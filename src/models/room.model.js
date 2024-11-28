@@ -31,6 +31,10 @@ const roomDetailsSchema = new Schema(
       enum: ["private", "group", "broadcast"],
       required: true,
     },
+    name: {
+      type: String,
+      default: null,
+    },
     theme: {
       type: String,
       default: "default",
