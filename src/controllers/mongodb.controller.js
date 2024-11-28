@@ -234,7 +234,7 @@ export const getMessages = async (payload) => {
       return null;
     }
 
-    return { messages };
+    return messages;
   } catch (error) {
     throw new Error(`Error in getMessages: ${error}`);
   }
