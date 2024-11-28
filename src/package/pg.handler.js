@@ -14,12 +14,7 @@ dotenv.config({ path: "../../.env" });
  *   verification, the message, and the user id associated with the token.
  */
 export const checkAccessToken = async (accessToken) => {
-  const sql = postgres({
-    connection: process.env.AUTH_DB_URI,  
-    max: 20,
-    idle_timeout: 5,
-    connect_timeout: 5,
-  });
+  const sql = postgres(process.env.AUTH_DB_URI);
 
   try {
     if (!accessToken) {
