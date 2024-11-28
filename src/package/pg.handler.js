@@ -13,15 +13,9 @@ dotenv.config({ path: "../../.env" });
  *   A promise that resolves to an object containing the status of the
  *   verification, the message, and the user id associated with the token.
  */
-
-const sql = postgres({
-  connectionString: process.env.AUTH_DB_URI,
-  max: 20,
-  idle_timeout: 5,
-  connect_timeout: 5,
-});
-
 export const checkAccessToken = async (accessToken) => {
+  const sql = postgres(process.env.AUTH_DB_URI);
+
   try {
     if (!accessToken) {
       return { status: 401, message: "Access token is required" };
@@ -77,7 +71,8 @@ export const checkAccessToken = async (accessToken) => {
   }
 };
 
-export const registerUserRooms = async (roomId, memberIds) => {
+export const registerUserRooms = async (roomId, members) => {
+  const sql = postgres(process.env.AUTH_DB_URI);
   try {
     await sql.unsafe(
       `
@@ -85,10 +80,10 @@ export const registerUserRooms = async (roomId, memberIds) => {
       SET rooms = COALESCE(rooms, '[]'::jsonb) || to_jsonb($1::text)
       WHERE id = ANY($2::uuid[])
       `,
-      [roomId, memberIds]
+      [roomId, members]
     );
     return true;
   } catch (error) {
-    throw new Error(`Database operation failed: ${error.message}`);
+    throw new Error(`Error in registerUserRooms: ${error}`);
   }
 };
