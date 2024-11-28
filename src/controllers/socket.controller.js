@@ -55,7 +55,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
           const roomDetails = await getRoomDetails(roomId);
           const { messages } = await getMessages({ roomId });
-          return { ...roomDetails, messages };
+          return { roomDetails, messages };
         });
 
         allRoomDetails = await Promise.all(roomDetailsPromises || []);
