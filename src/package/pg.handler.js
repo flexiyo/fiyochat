@@ -14,7 +14,12 @@ dotenv.config({ path: "../../.env" });
  *   verification, the message, and the user id associated with the token.
  */
 export const checkAccessToken = async (accessToken) => {
-  const sql = postgres(process.env.AUTH_DB_URI);
+  const sql = postgres({
+    connectionString: process.env.AUTH_DB_URI,
+    max: 20,
+    idle_timeout: 5,
+    connect_timeout: 5,
+  });
 
   try {
     if (!accessToken) {
@@ -68,14 +73,12 @@ export const checkAccessToken = async (accessToken) => {
     };
   } catch (error) {
     throw new Error(`Error in checkAccessToken: ${error}`);
-  } finally {
-    await sql.end();
   }
 };
 
 export const registerUserRooms = async (roomId, members) => {
   const sql = postgres({
-    connection: process.env.AUTH_DB_URI,
+    connectionString: process.env.AUTH_DB_URI,
     max: 20,
     idle_timeout: 5,
     connect_timeout: 5,
