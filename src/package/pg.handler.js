@@ -74,8 +74,8 @@ export const checkAccessToken = async (accessToken) => {
 };
 
 export const registerUserRooms = async (roomId, members) => {
+  const sql = postgres(process.env.AUTH_DB_URI);
   try {
-    const sql = postgres(process.env.AUTH_DB_URI);
 
     await sql.unsafe(
       `
