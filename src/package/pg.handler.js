@@ -27,68 +27,42 @@ export const checkAccessToken = async (accessToken) => {
       return { status: 401, message: "Access token is required" };
     }
 
-    let payload;
-    try {
-      payload = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-    } catch (error) {
-      if (error.name === "TokenExpiredError") {
-        return { status: 401, message: "Access token has expired" };
-      }
-      return { status: 401, message: "Invalid access token" };
-    }
+    const payload = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
 
     const result = await sql`
-      SELECT id, full_name, username, email, gender, dob, profession, bio, account_type, is_private, avatar, banner, created_at, rooms
+      SELECT id, username, email, avatar
       FROM users
       WHERE id = ${payload.userId} AND tokens->>'at' = ${accessToken}
     `;
 
     if (result.length === 0) {
-      return {
-        status: 401,
-        message: "Access token mismatch or user not found",
-      };
+      return { status: 401, message: "Access token mismatch or user not found" };
     }
-
-    const user = result[0];
 
     return {
       status: 200,
       message: "ok",
-      data: {
-        userId: user.id,
-        fullName: user.full_name,
-        username: user.username,
-        email: user.email,
-        gender: user.gender,
-        dob: user.dob,
-        profession: user.profession,
-        bio: user.bio,
-        accountType: user.account_type,
-        isPrivate: user.is_private,
-        avatar: user.avatar,
-        banner: user.banner,
-        createdAt: user.created_at,
-        rooms: user.rooms,
-      },
+      data: result[0],
     };
   } catch (error) {
-    throw new Error(`Error in checkAccessToken: ${error}`);
+    if (error.name === "TokenExpiredError") {
+      return { status: 401, message: "Access token has expired" };
+    }
+    console.error("Token verification failed:", error);
+    return { status: 500, message: "Internal server error" };
   }
 };
 
 export const registerUserRooms = async (roomId, memberIds) => {
   try {
-    await sql.unsafe(
-      `
+    await sql`
       UPDATE users
-      SET rooms = COALESCE(rooms, '[]'::jsonb) || to_jsonb($1::text)
-      WHERE id = ANY($2::uuid[])
-      `,
-      [roomId, memberIds]
-    );
-    return true;
+      SET rooms = COALESCE(rooms, '[]'::jsonb) || to_jsonb(${roomId}::text)
+      WHERE id = ANY(${sql.array(memberIds, 'uuid')})
+    `;
+    return { status: 200, message: "Rooms updated successfully" };
   } catch (error) {
-    throw new Error(`Database operation failed: ${error.message}`);
+    console.error("Error updating user rooms:", error);
+    return { status: 500, message: `Database operation failed: ${error.message}` };
   }
 };
