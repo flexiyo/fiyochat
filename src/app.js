@@ -51,7 +51,7 @@ app.use((req, res, next) => {
     );
 
     if (req.method === "OPTIONS") {
-      res.sendStatus(204);
+      res.sendStatus(200);
     } else {
       next();
     }

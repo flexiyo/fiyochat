@@ -6,6 +6,7 @@ import {
   generateCollectionName,
   getDatabaseName,
 } from "../utils/mongoHandler.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { registerUserRooms } from "../package/pg.handler.js";
 
 /* Utility Functions */
@@ -281,7 +282,7 @@ export const createRoomCollection = async (req, res) => {
     if (!Array.isArray(memberIds) || memberIds.length === 0) {
       return res
         .status(400)
-        .json(new ApiRespnse(400, null, "Invalid or missing memberIds array."));
+        .json(new ApiResponse(400, null, "Invalid or missing memberIds array."));
     }
 
     const adminDb = mongoose.connection.db.admin();
@@ -357,7 +358,7 @@ export const createRoomCollection = async (req, res) => {
     await registerUserRooms(collectionName, memberIds);
 
     return res.status(200).json(
-      new ApiRespnse(
+      new ApiResponse(
         200,
         {
           databaseName,
