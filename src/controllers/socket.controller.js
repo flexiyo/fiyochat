@@ -8,6 +8,7 @@ import {
   unreactToMessage,
   addToFavourites,
   getMessages,
+  getRoomDetails,
 } from "./mongodb.controller.js";
 
 import { validatePayload } from "../utils/validatePayload.js";
@@ -45,12 +46,14 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         return;
       }
 
-      socket.user?.rooms?.forEach((roomId) => {
+      let allRoomDetails = [];
+
+      socket.user?.rooms?.forEach(async (roomId) => {
         socket.join(roomId);
         socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
+        allRoomDetails.push(await getRoomDetails(roomId));
       });
-
-      socket.emit("roomsListResponse", socket.user.rooms);
+      socket.emit("roomsListResponse", allRoomDetails);
 
       // Handle Message Events
       socket.on("is_typing", (payload) => {
