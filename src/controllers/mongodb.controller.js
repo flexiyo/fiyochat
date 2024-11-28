@@ -212,22 +212,33 @@ export const getMessages = async (payload) => {
   try {
     const { roomId, page = 0, pageSize = 10 } = payload;
 
+    if (!roomId) {
+      throw new Error("Invalid roomId: roomId is required.");
+    }
+
     const messageStockModel = getMessageStockModel(roomId);
+    if (!messageStockModel) {
+      throw new Error(`Invalid model: Could not retrieve model for roomId ${roomId}`);
+    }
+
     const skipCount = page * pageSize;
 
+    // Fetch messages from the database
     const messages = await messageStockModel
       .find({})
       .sort({ _id: -1 })
       .skip(skipCount)
       .limit(pageSize);
 
+    // Check if messages are empty and return null
     if (!messages.length) {
       return null;
     }
 
     return { messages };
   } catch (error) {
-    throw new Error(`Error in getMessages: ${error}`);
+    console.error("Error in getMessages:", error); // Log the error
+    throw new Error(`Error in getMessages: ${error.message}`); // Ensure detailed error message
   }
 };
 
