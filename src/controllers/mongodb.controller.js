@@ -223,10 +223,10 @@ export const getLatestMessages = async (payload) => {
 
     const messages = await messageStockModel
       .findOne({})
-      .sort({ _id: -1 })
+      .sort({ serial: -1 })
       .lean();
 
-    if (messages && messages.id.toString() === roomId.toString()) {
+    if (messages && messages.id === roomId) {
       return { messages: null };
     }
 
