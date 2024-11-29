@@ -59,8 +59,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
 
           const roomDetails = await getRoomDetails(roomId);
-          const { messages } = await getLatestMessages({ roomId });
-          return { roomDetails, messages };
+          const { messageStock } = await getLatestMessages({ roomId });
+          return { roomDetails, messageStock };
         });
 
         allRoomDetails = await Promise.all(roomDetailsPromises || []);

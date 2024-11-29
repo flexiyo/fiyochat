@@ -221,16 +221,16 @@ export const getLatestMessages = async (payload) => {
       throw new Error(`Could not retrieve model for roomId ${roomId}`);
     }
 
-    const messages = await messageStockModel
+    const messageStock = await messageStockModel
       .findOne({})
       .sort({ serial: -1 })
       .lean();
 
-    if (messages && messages.id === roomId) {
-      return { messages: null };
+    if (messageStock && messageStock.id === roomId) {
+      return { messageStock: null };
     }
 
-    return { messages };
+    return { messageStock };
   } catch (error) {
     throw new Error(`Error in getLatestMessages: ${error.message}`);
   }
