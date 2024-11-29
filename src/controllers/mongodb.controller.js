@@ -38,7 +38,7 @@ export const addMessage = async (payload) => {
     };
 
     const lastDocument = await messageStockModel
-      .findOne({})
+      .findOne({ messages: { $exists: true } })
       .sort({ serial: -1 })
       .limit(1)
       .exec();

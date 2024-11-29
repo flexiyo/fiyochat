@@ -1,5 +1,3 @@
-import { RoomDetails } from "../models/room.model.js";
-
 export const generateDatabaseName = (lastDatabaseName) => {
   if (!lastDatabaseName) return new Date().getFullYear() + "_" + 1;
 
