@@ -33,7 +33,10 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
       const { message, data } = await checkAccessToken(accessToken);
 
       if (message !== "ok") {
-        socket.emit("error", { event: "connection", error: message });
+        socket.emit("error", {
+          event: "connection",
+          error: { name: "AccessTokenError", message },
+        });
         socket.disconnect();
         return;
       }
@@ -41,7 +44,10 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
       socket.user = data;
 
       if (!socket.user?.rooms) {
-        socket.emit("error", { event: "connection", error: "No rooms found" });
+        socket.emit("error", {
+          event: "connection",
+          error: { name: "RoomsNotFoundError", message: "No rooms found" },
+        });
         socket.disconnect();
         return;
       }
