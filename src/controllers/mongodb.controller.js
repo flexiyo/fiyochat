@@ -27,14 +27,14 @@ const getRoomDetailsModel = (collectionName) => {
 /* Message Related Controllers */
 export const addMessage = async (payload) => {
   try {
-    const { roomId, senderId, message, messageId } = payload;
+    const { roomId, senderId, content, messageId } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
     const messageObject = {
       id: messageId,
       senderId,
-      content: message,
+      content: content,
     };
 
     const lastDocument = await messageStockModel
@@ -83,7 +83,7 @@ export const removeMessage = async (payload) => {
 
 export const editMessage = async (payload) => {
   try {
-    const { roomId, originalMessage, updatedMessage, messageId } = payload;
+    const { roomId, originalContent, updatedContent, messageId } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
@@ -91,8 +91,8 @@ export const editMessage = async (payload) => {
       { "messages.id": messageId },
       {
         $set: {
-          "messages.$.content": updatedMessage,
-          "messages.$.originalMessage": originalMessage,
+          "messages.$.content": updatedContent,
+          "messages.$.originalContent": originalContent,
         },
       },
       { new: true }
@@ -232,7 +232,7 @@ export const getLatestMessages = async (payload) => {
 
     return { messageStock };
   } catch (error) {
-    throw new Error(`Error in getLatestMessages: ${error.message}`);
+    throw new Error(`Error in getLatestMessages: ${error}`);
   }
 };
 

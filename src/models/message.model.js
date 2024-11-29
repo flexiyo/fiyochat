@@ -17,7 +17,7 @@ export const messageSchema = new Schema({
     type: String,
     required: true,
   },
-  originalMessage: {
+  originalContent: {
     type: String,
     default: null,
   },
