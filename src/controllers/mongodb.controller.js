@@ -237,66 +237,6 @@ export const getLatestMessages = async (payload) => {
 };
 
 /* Room Related Controllers */
-export const addToFavourites = async (payload) => {
-  try {
-    const { roomId, senderId, message, messageId } = payload;
-
-    if (!messageId) {
-      throw new Error("messageId cannot be null or undefined");
-    }
-
-    const roomDetailsModel = getRoomDetailsModel(roomId);
-
-    const roomDetails = await roomDetailsModel.findOne({ "members.id": senderId });
-
-    if (roomDetails) {
-      const member = roomDetails.members.find(member => member.id === senderId);
-      const existingFav = member.favourites.some(fav => fav.id === messageId);
-
-      if (existingFav) {
-        throw new Error("This message is already in your favourites");
-      }
-    }
-
-    await roomDetailsModel.findOneAndUpdate(
-      { "members.id": senderId },
-      {
-        $push: {
-          "members.$.favourites": {
-            id: messageId,
-            senderId,
-            content: message,
-          },
-        },
-      },
-      { new: true }
-    );
-  } catch (error) {
-    throw new Error(`Error in addToFavourites: ${error.message}`);
-  }
-};
-
-
-export const removeFromFavourites = (payload) => {
-  try {
-    const { roomId, senderId, messageId } = payload;
-
-    const roomDetailsModel = getRoomDetailsModel(roomId);
-
-    roomDetailsModel.findOneAndUpdate(
-      { "members.id": senderId },
-      {
-        $pull: {
-          "members.$.favourites": { id: messageId },
-        },
-      },
-      { new: true }
-    );
-  } catch (error) {
-    throw new Error(`Error in removeFromFavourites: ${error}`);
-  }
-};
-
 export const createRoomCollection = async (req, res) => {
   try {
     const { roomType, memberIds } = req.body;

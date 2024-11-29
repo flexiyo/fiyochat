@@ -6,7 +6,6 @@ import {
   replyToMessage,
   reactToMessage,
   unreactToMessage,
-  addToFavourites,
   getLatestMessages,
   getRoomDetails,
 } from "./mongodb.controller.js";
@@ -269,32 +268,6 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             error,
           });
           throw new Error(`Error in unreact_to_message: ${error}`);
-        }
-      });
-
-      socket.on("add_to_favourites", async (payload) => {
-        try {
-          const requiredFields = [
-            "roomId",
-            "userId",
-            "senderId",
-            "message",
-            "messageId",
-          ];
-          validatePayload(payload, requiredFields);
-
-          const result = await addToFavourites(payload);
-          const { userId, messageId } = payload;
-
-          if (result) {
-            socket.emit("message_favourited", { userId, messageId });
-          }
-        } catch (error) {
-          socket.emit("error", {
-            event: "add_to_favourites",
-            error,
-          });
-          throw new Error(`Error in add_to_favourites: ${error}`);
         }
       });
 

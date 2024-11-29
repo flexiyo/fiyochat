@@ -9,10 +9,6 @@ const memberSchema = new Schema({
     type: String,
     required: true,
   },
-  favourites: {
-    type: [messageSchema],
-    default: [],
-  },
   joinedAt: {
     type: Date,
     default: Date.now,
