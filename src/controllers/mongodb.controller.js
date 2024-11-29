@@ -241,7 +241,22 @@ export const addToFavourites = async (payload) => {
   try {
     const { roomId, senderId, message, messageId } = payload;
 
+    if (!messageId) {
+      throw new Error("messageId cannot be null or undefined");
+    }
+
     const roomDetailsModel = getRoomDetailsModel(roomId);
+
+    const roomDetails = await roomDetailsModel.findOne({ "members.id": senderId });
+
+    if (roomDetails) {
+      const member = roomDetails.members.find(member => member.id === senderId);
+      const existingFav = member.favourites.some(fav => fav.id === messageId);
+
+      if (existingFav) {
+        throw new Error("This message is already in your favourites");
+      }
+    }
 
     await roomDetailsModel.findOneAndUpdate(
       { "members.id": senderId },
@@ -257,9 +272,10 @@ export const addToFavourites = async (payload) => {
       { new: true }
     );
   } catch (error) {
-    throw new Error(`Error in addToFavourites: ${error}`);
+    throw new Error(`Error in addToFavourites: ${error.message}`);
   }
 };
+
 
 export const removeFromFavourites = (payload) => {
   try {
