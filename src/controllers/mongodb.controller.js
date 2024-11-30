@@ -284,7 +284,7 @@ export const createRoomCollection = async (req, res) => {
         await newDb.createCollection(collectionName);
         roomDetailsModel = newDb.model(collectionName, RoomDetails.schema);
       } else {
-        collectionName = generateUniqueCollectionName(collections);
+        collectionName = generateCollectionName(collections);
         await db.createCollection(collectionName);
         roomDetailsModel = db.model(collectionName, RoomDetails.schema);
       }
