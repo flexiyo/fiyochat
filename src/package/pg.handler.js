@@ -71,7 +71,7 @@ export const checkAccessToken = async (accessToken) => {
   }
 };
 
-export const registerUserRooms = async (roomId, members) => {
+export const registerUserRooms = async (roomId, memberIds) => {
   const sql = postgres(process.env.AUTH_DB_URI);
 
   try {
@@ -82,9 +82,8 @@ export const registerUserRooms = async (roomId, members) => {
     WHEN NOT (${roomId}::text = ANY (rooms)) THEN rooms || to_jsonb(${roomId}::text)
     ELSE rooms
   END
-  WHERE id = ANY(${sql.array(members)}::uuid[])
+  WHERE id = ANY(${memberIds}::uuid[])
 `;
-
 
     return true;
   } catch (error) {
