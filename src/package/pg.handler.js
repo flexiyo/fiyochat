@@ -74,17 +74,13 @@ export const checkAccessToken = async (accessToken) => {
 export const registerUserRooms = async (roomId, memberIds) => {
   const sql = postgres(process.env.AUTH_DB_URI);
 
-  console.log(memberIds)
-  console.log(typeof memberIds)
+  console.log(memberIds);
+  console.log(typeof memberIds);
 
   try {
     await sql`
       UPDATE users
-      SET rooms = CASE
-        WHEN rooms IS NULL THEN to_jsonb(ARRAY[${roomId}::text])
-        WHEN NOT (${roomId}::text = ANY (rooms)) THEN rooms || to_jsonb(${roomId}::text)
-        ELSE rooms
-      END
+      SET rooms = rooms || to_jsonb(${roomId}::text)
       WHERE id = ANY(${sql.array(memberIds)}::uuid[])
     `;
 
