@@ -76,14 +76,15 @@ export const registerUserRooms = async (roomId, members) => {
 
   try {
     await sql`
-            UPDATE users
-                SET rooms = CASE
-                WHEN rooms IS NULL THEN to_jsonb(ARRAY[${roomId}::text])
-                WHEN NOT (${roomId}::text = ANY (SELECT jsonb_array_elements_text(rooms))) THEN rooms || to_jsonb(${roomId}::text)
-              ELSE rooms
-              END
-            WHERE id = ANY(${sql.array(members)}::uuid[])
+  UPDATE users
+  SET rooms = CASE
+    WHEN rooms IS NULL THEN to_jsonb(ARRAY[${roomId}::text])
+    WHEN NOT (${roomId}::text = ANY (rooms)) THEN rooms || to_jsonb(${roomId}::text)
+    ELSE rooms
+  END
+  WHERE id = ANY(${sql.array(members)}::uuid[])
 `;
+
 
     return true;
   } catch (error) {
