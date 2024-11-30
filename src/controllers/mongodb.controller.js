@@ -6,7 +6,7 @@ import {
   getDatabaseName,
 } from "../utils/mongoHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { registerUserRooms } from "../package/pg.handler.js";
+import { registerUserRoom, deleteUserRoom } from "../package/pg.handler.js";
 
 /* Utility Functions */
 const getMessageStockModel = (collectionName) => {
@@ -228,19 +228,17 @@ export const getLatestMessages = async (payload) => {
   }
 };
 
-/* Room Related Controllers */
-export const createRoomCollection = async (req, res) => {
+/* Chat Room Related Controllers */
+export const createChatRoom = async (req, res) => {
   try {
     const { roomType, memberIds } = req.body;
 
     if (!Array.isArray(memberIds) || memberIds.length === 0) {
-      return res
-        .status(400)
-        .json({
-          status: 400,
-          data: null,
-          message: "Invalid or missing memberIds array.",
-        });
+      return res.status(400).json({
+        status: 400,
+        data: null,
+        message: "Invalid or missing memberIds array.",
+      });
     }
 
     const adminDb = mongoose.connection.db.admin();
@@ -282,26 +280,25 @@ export const createRoomCollection = async (req, res) => {
       }
     }
 
-    await registerUserRooms(collectionName, { roomType, memberIds });
+    await registerUserRoom(collectionName, { roomType, memberIds });
 
     return res.status(200).json({
       status: 200,
-      data: { databaseName },
+      data: { roomId: collectionName },
       message: "Room created successfully",
     });
   } catch (error) {
-    console.error(`Error in createRoomCollection: ${error}`);
-    return res
-      .status(500)
-      .json({ status: 500, data: null, message: "Internal Server Error" });
+    throw new Error(`Error in createChatRoom: ${error}`);
   }
 };
 
-export const deleteRoomCollection = async (collectionName) => {
+export const deleteChatRoom = async (collectionName) => {
   try {
     const db = mongoose.connection.useDb(getDatabaseName(collectionName));
     await db.dropCollection(collectionName);
+
+    await deleteUserRoom(collectionName);
   } catch (error) {
-    throw error;
+    throw new Error(`Error in deleteChatRoom: ${error}`);
   }
 };

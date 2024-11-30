@@ -71,7 +71,7 @@ export const checkAccessToken = async (accessToken) => {
   }
 };
 
-export const registerUserRooms = async (roomId, roomDetails) => {
+export const registerUserRoom = async (roomId, roomDetails) => {
   const sql = postgres(process.env.AUTH_DB_URI);
 
   const {
@@ -109,6 +109,29 @@ export const registerUserRooms = async (roomId, roomDetails) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Error in registerUserRooms: ${error}`);
+    throw new Error(`Error in registerUserRoom: ${error}`);
+  }
+};
+
+export const deleteUserRoom = async (roomId) => {
+  const sql = postgres(process.env.AUTH_DB_URI);
+
+  try {
+    await sql.begin(async (tx) => {
+      await tx`
+        DELETE FROM chat_rooms
+        WHERE id = ${roomId}::text
+      `;
+
+      await tx`
+        UPDATE users
+        SET rooms = jsonb_array_remove(rooms, jsonb_array_position(rooms, ${roomId}::text))
+        WHERE id = ANY((SELECT members FROM chat_rooms WHERE id = ${roomId}::text)::jsonb->>'members')
+      `;
+    });
+
+    return true;
+  } catch (error) {
+    throw new Error(`Error in deleteUserRoom: ${error}`);
   }
 };

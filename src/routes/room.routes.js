@@ -1,10 +1,10 @@
 import { Router } from "express";
 
-import { createRoomCollection, deleteRoomCollection } from "../controllers/mongodb.controller.js";
+import { createChatRoom, deleteChatRoom } from "../controllers/mongodb.controller.js";
 
 const router = Router();
 
-router.post("/create", createRoomCollection);
-router.delete("/delete", deleteRoomCollection);
+router.post("/create", createChatRoom);
+router.delete("/delete", deleteChatRoom);
 
 export default router;
