@@ -71,15 +71,41 @@ export const checkAccessToken = async (accessToken) => {
   }
 };
 
-export const registerUserRooms = async (roomId, memberIds) => {
+export const registerUserRooms = async (roomId, roomDetails) => {
   const sql = postgres(process.env.AUTH_DB_URI);
 
+  const {
+    roomType,
+    memberIds,
+    name = null,
+    theme = "default",
+    avatar = null,
+  } = roomDetails;
+
   try {
-    await sql`
-      UPDATE users
-      SET rooms = rooms || to_jsonb(${roomId}::text)
-      WHERE id = ANY(${memberIds}::uuid[])
-    `;
+    await sql.begin(async (tx) => {
+      await tx`
+        INSERT INTO chat_rooms (id, name, type, theme, avatar, members)
+        VALUES (
+          ${roomId}::text,
+          ${name},
+          ${roomType}::text,
+          ${theme},
+          ${avatar},
+          ${tx.json(
+            memberIds.map((id) => ({
+              id: id.toString(),
+            }))
+          )},
+        )
+      `;
+
+      await tx`
+        UPDATE users
+        SET rooms = rooms || to_jsonb(${roomId}::text)
+        WHERE id = ANY(${memberIds})
+      `;
+    });
 
     return true;
   } catch (error) {

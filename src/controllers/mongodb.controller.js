@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { MessageStock } from "../models/message.model.js";
-import { RoomDetails } from "../models/room.model.js";
 import {
   generateDatabaseName,
   generateCollectionName,
@@ -17,13 +16,6 @@ const getMessageStockModel = (collectionName) => {
     .model(collectionName, MessageStock.schema);
 };
 
-const getRoomDetailsModel = (collectionName) => {
-  const dbName = getDatabaseName(collectionName);
-  return mongoose.connection
-    .useDb(dbName)
-    .model(collectionName, RoomDetails.schema);
-};
-
 /* Message Related Controllers */
 export const addMessage = async (payload) => {
   try {
@@ -38,7 +30,7 @@ export const addMessage = async (payload) => {
     };
 
     const lastDocument = await messageStockModel
-      .findOne({ messages: { $exists: true } })
+      .findOne({})
       .sort({ serial: -1 })
       .limit(1)
       .exec();
@@ -244,7 +236,11 @@ export const createRoomCollection = async (req, res) => {
     if (!Array.isArray(memberIds) || memberIds.length === 0) {
       return res
         .status(400)
-        .json({ status: 400, data: null, message: "Invalid or missing memberIds array." });
+        .json({
+          status: 400,
+          data: null,
+          message: "Invalid or missing memberIds array.",
+        });
     }
 
     const adminDb = mongoose.connection.db.admin();
@@ -262,7 +258,6 @@ export const createRoomCollection = async (req, res) => {
 
     let databaseName = lastDatabase;
     let collectionName;
-    let roomDetailsModel;
 
     if (!databaseName) {
       databaseName = generateDatabaseName();
@@ -270,7 +265,6 @@ export const createRoomCollection = async (req, res) => {
       collectionName = generateCollectionName(databaseName);
 
       await db.createCollection(collectionName);
-      roomDetailsModel = db.model(collectionName, RoomDetails.schema);
     } else {
       const db = mongoose.connection.useDb(databaseName);
 
@@ -282,28 +276,17 @@ export const createRoomCollection = async (req, res) => {
         collectionName = generateCollectionName(databaseName);
 
         await newDb.createCollection(collectionName);
-        roomDetailsModel = newDb.model(collectionName, RoomDetails.schema);
       } else {
         collectionName = generateCollectionName(databaseName);
         await db.createCollection(collectionName);
-        roomDetailsModel = db.model(collectionName, RoomDetails.schema);
       }
     }
 
-    
-    const roomDetails = await roomDetailsModel.create({
-      id: collectionName,
-      type: roomType,
-      members: memberIds.map((memberId) => ({
-        id: memberId,
-      })),
-    });
-    
-    await registerUserRooms(collectionName, memberIds);
-    
+    await registerUserRooms(collectionName, { roomType, memberIds });
+
     return res.status(200).json({
       status: 200,
-      data: { databaseName, roomDetails },
+      data: { databaseName },
       message: "Room created successfully",
     });
   } catch (error) {
@@ -322,24 +305,3 @@ export const deleteRoomCollection = async (collectionName) => {
     throw error;
   }
 };
-
-export const updateRoomDetails = async (payload) => {
-  try {
-    const { roomId, memberIds } = payload;
-    const roomDetailsModel = getRoomDetailsModel(roomId);
-    await roomDetailsModel.updateOne({ id: roomId }, { $set: { memberIds } });
-  } catch (error) {
-    throw new Error(`Error in updateRoomDetails: ${error}`);
-  }
-};
-
-export const getRoomDetails = async (roomId) => {
-  try {
-    const roomDetailsModel = getRoomDetailsModel(roomId);
-    const roomDetails = await roomDetailsModel.findOne({ id: roomId });
-    return roomDetails;
-  } catch (error) {
-    throw new Error(`Error in getRoomDetails: ${error}`);
-  }
-};
-
