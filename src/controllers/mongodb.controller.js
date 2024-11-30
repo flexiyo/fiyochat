@@ -304,8 +304,10 @@ export const createRoomCollection = async (req, res) => {
       roomDetailsModel = await mongoose.connection
         .useDb(lastDatabase)
         .model(collectionName, RoomDetails.schema);
-    }
-
+      }
+      
+      await registerUserRooms(collectionName, memberIds);
+      
     const roomDetails = await roomDetailsModel.create({
       id: collectionName,
       type: roomType,
@@ -319,7 +321,6 @@ export const createRoomCollection = async (req, res) => {
       }),
     });
 
-    await registerUserRooms(collectionName, memberIds);
 
     return res.status(200).json(
       new ApiResponse(

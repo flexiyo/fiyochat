@@ -73,15 +73,18 @@ export const checkAccessToken = async (accessToken) => {
 
 export const registerUserRooms = async (roomId, members) => {
   const sql = postgres(process.env.AUTH_DB_URI);
+
   try {
-    await sql.unsafe(
-      `
-      UPDATE users
-      SET rooms = COALESCE(rooms, '[]'::jsonb) || to_jsonb($1::text)
-      WHERE id = ANY($2::uuid[])
-      `,
-      [roomId, members]
-    );
+    await sql`
+            UPDATE users
+                SET rooms = CASE
+                WHEN rooms IS NULL THEN to_jsonb(ARRAY[${roomId}::text])
+                WHEN NOT (${roomId}::text = ANY (SELECT jsonb_array_elements_text(rooms))) THEN rooms || to_jsonb(${roomId}::text)
+              ELSE rooms
+              END
+            WHERE id = ANY(${sql.array(members)}::uuid[])
+`;
+
     return true;
   } catch (error) {
     throw new Error(`Error in registerUserRooms: ${error}`);
