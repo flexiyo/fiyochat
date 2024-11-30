@@ -101,10 +101,13 @@ export const registerUserRoom = async (roomId, roomDetails) => {
       `;
 
       await tx`
-        UPDATE users
-        SET rooms = rooms || to_jsonb(${roomId}::text)
-        WHERE id = ANY(${memberIds})
-      `;
+  UPDATE users
+  SET rooms = (
+    SELECT jsonb_agg(DISTINCT elem)
+    FROM jsonb_array_elements_text(COALESCE(rooms, '[]'::jsonb) || to_jsonb(${roomId}::text)) AS elem
+  )
+  WHERE id = ANY(${memberIds})
+`;
     });
 
     return true;
