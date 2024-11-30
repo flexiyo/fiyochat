@@ -282,11 +282,15 @@ export const createChatRoom = async (req, res) => {
 
     await registerUserRoom(collectionName, { roomType, memberIds });
 
-    return res.status(200).json({
-      status: 200,
-      data: { roomId: collectionName },
-      message: "Room created successfully",
-    });
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { roomId: collectionName },
+          "Room created successfully."
+        )
+      );
   } catch (error) {
     throw new Error(`Error in createChatRoom: ${error}`);
   }

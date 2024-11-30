@@ -96,7 +96,7 @@ export const registerUserRoom = async (roomId, roomDetails) => {
             memberIds.map((id) => ({
               id: id.toString(),
             }))
-          )},
+          )}
         )
       `;
 
