@@ -237,6 +237,8 @@ export const getLatestMessages = async (payload) => {
 };
 
 /* Room Related Controllers */
+import mongoose from "mongoose";
+
 export const createRoomCollection = async (req, res) => {
   try {
     const { roomType, memberIds } = req.body;
@@ -244,96 +246,72 @@ export const createRoomCollection = async (req, res) => {
     if (!Array.isArray(memberIds) || memberIds.length === 0) {
       return res
         .status(400)
-        .json(
-          new ApiResponse(400, null, "Invalid or missing memberIds array.")
-        );
+        .json({ status: 400, data: null, message: "Invalid or missing memberIds array." });
     }
 
     const adminDb = mongoose.connection.db.admin();
-    const { databases } = await adminDb.listDatabases();
     const exclusionPattern = /^(admin|local|config|test)$/;
-
     const currentYear = new Date().getFullYear();
-    const chatDatabases = databases.filter(
-      (db) =>
-        !exclusionPattern.test(db.name) &&
-        new RegExp(`^${currentYear}_\\d+$`).test(db.name)
-    );
 
-    let lastDatabase;
-
-    if (chatDatabases.length === 0) {
-      const newDatabaseName = generateDatabaseName();
-      const db = mongoose.connection.useDb(newDatabaseName);
-
-      const collectionName = generateCollectionName(newDatabaseName);
-      await db.createCollection(collectionName);
-
-      return { databaseName: newDatabaseName, collectionName };
-    } else {
-      lastDatabase = chatDatabases[chatDatabases.length - 1].name;
-    }
-
-    const db = mongoose.connection.useDb(lastDatabase);
-    const collections = await db.listCollections();
+    const { databases } = await adminDb.listDatabases();
+    const lastDatabase = databases
+      .filter(
+        (db) =>
+          !exclusionPattern.test(db.name) &&
+          new RegExp(`^${currentYear}_\\d+$`).test(db.name)
+      )
+      .sort((a, b) => b.name.localeCompare(a.name))[0]?.name;
 
     let databaseName = lastDatabase;
     let collectionName;
     let roomDetailsModel;
 
-    if (collections.length >= 1000) {
-      databaseName = generateDatabaseName(lastDatabase);
-      const newDb = mongoose.connection.useDb(databaseName);
+    if (!databaseName) {
+      databaseName = generateDatabaseName();
+      const db = mongoose.connection.useDb(databaseName);
       collectionName = generateCollectionName(databaseName);
 
-      await newDb.createCollection(collectionName);
-
-      roomDetailsModel = await mongoose.connection
-        .useDb(databaseName)
-        .model(collectionName, RoomDetails.schema);
-    } else {
-      collectionName = generateCollectionName(lastDatabase);
-      const existingCollections = collections.map((col) => col.name);
-
-      while (existingCollections.includes(collectionName)) {
-        collectionName = generateCollectionName(lastDatabase);
-      }
-
       await db.createCollection(collectionName);
+      roomDetailsModel = db.model(collectionName, RoomDetails.schema);
+    } else {
+      const db = mongoose.connection.useDb(databaseName);
 
-      roomDetailsModel = await mongoose.connection
-        .useDb(lastDatabase)
-        .model(collectionName, RoomDetails.schema);
+      const collections = await db.listCollections();
+
+      if (collections.length >= 1000) {
+        databaseName = generateDatabaseName(databaseName);
+        const newDb = mongoose.connection.useDb(databaseName);
+        collectionName = generateCollectionName(databaseName);
+
+        await newDb.createCollection(collectionName);
+        roomDetailsModel = newDb.model(collectionName, RoomDetails.schema);
+      } else {
+        collectionName = generateUniqueCollectionName(collections);
+        await db.createCollection(collectionName);
+        roomDetailsModel = db.model(collectionName, RoomDetails.schema);
       }
-      
-      await registerUserRooms(collectionName, memberIds);
-      
+    }
+
+    await registerUserRooms(collectionName, memberIds);
+
     const roomDetails = await roomDetailsModel.create({
       id: collectionName,
       type: roomType,
-      members: memberIds.map((memberId) => {
-        if (!memberId) {
-          throw new Error("Missing member id");
-        }
-        return {
-          id: memberId,
-        };
-      }),
+      members: memberIds.map((memberId) => ({
+        id: memberId,
+      })),
     });
 
-
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {
-          databaseName,
-          roomDetails,
-        },
-        "Room created successfully"
-      )
-    );
+    return res.status(200).json({
+      status: 200,
+      data: { databaseName, roomDetails },
+      message: "Room created successfully",
+    });
   } catch (error) {
-    throw new Error(`Error in createRoomCollection: ${error}`);
+    console.error(`Error in createRoomCollection: ${error}`);
+    return res
+      .status(500)
+      .json({ status: 500, data: null, message: "Internal Server Error" });
   }
 };
 
@@ -365,3 +343,4 @@ export const getRoomDetails = async (roomId) => {
     throw new Error(`Error in getRoomDetails: ${error}`);
   }
 };
+
