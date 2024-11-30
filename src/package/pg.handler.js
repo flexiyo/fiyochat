@@ -93,9 +93,7 @@ export const registerUserRoom = async (roomId, roomDetails) => {
           ${theme},
           ${avatar},
           ${tx.json(
-            memberIds.map((id) => ({
-              id: id.toString(),
-            }))
+            memberIds.map((id) => id.toString())
           )}
         )
       `;
