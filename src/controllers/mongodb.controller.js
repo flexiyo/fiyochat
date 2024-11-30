@@ -122,7 +122,7 @@ export const seeMessage = async (payload) => {
 
 export const replyToMessage = async (payload) => {
   try {
-    const { roomId, senderId, parentMessageId, replyMessage, replyMessageId } =
+    const { roomId, senderId, parentMessageId, replyContent, replyMessageId } =
       payload;
 
     const messageStockModel = getMessageStockModel(roomId);
@@ -130,7 +130,7 @@ export const replyToMessage = async (payload) => {
     const replyMessageObject = {
       id: replyMessageId,
       senderId,
-      content: replyMessage,
+      content: replyContent,
       parentMessageId: parentMessageId,
     };
 

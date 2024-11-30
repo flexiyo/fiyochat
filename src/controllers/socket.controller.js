@@ -129,8 +129,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const requiredFields = [
             "roomId",
             "senderId",
-            "originalMessage",
-            "updatedMessage",
+            "originalContent",
+            "updatedContent",
             "messageId",
           ];
           validatePayload(payload, requiredFields);
@@ -139,16 +139,16 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const {
             roomId,
             senderId,
-            originalMessage,
-            updatedMessage,
+            originalContent,
+            updatedContent,
             messageId,
           } = payload;
 
           if (result) {
             emitToRoom(socket, "message_edited", roomId, {
               senderId,
-              originalMessage,
-              updatedMessage,
+              originalContent,
+              updatedContent,
               messageId,
             });
           }
@@ -181,7 +181,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             "roomId",
             "senderId",
             "parentMessageId",
-            "replyMessage",
+            "replyContent",
             "replyMessageId",
           ];
           validatePayload(payload, requiredFields);
@@ -191,7 +191,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             roomId,
             senderId,
             parentMessageId,
-            replyMessage,
+            replyContent,
             replyMessageId,
           } = payload;
 
@@ -199,7 +199,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             emitToRoom(socket, "message_replied", roomId, {
               senderId,
               parentMessageId,
-              replyMessage,
+              replyContent,
               replyMessageId,
             });
           }
