@@ -74,9 +74,6 @@ export const checkAccessToken = async (accessToken) => {
 export const registerUserRooms = async (roomId, memberIds) => {
   const sql = postgres(process.env.AUTH_DB_URI);
 
-  console.log(memberIds);
-  console.log(typeof memberIds);
-
   try {
     await sql`
       UPDATE users

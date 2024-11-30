@@ -290,8 +290,7 @@ export const createRoomCollection = async (req, res) => {
       }
     }
 
-    await registerUserRooms(collectionName, memberIds);
-
+    
     const roomDetails = await roomDetailsModel.create({
       id: collectionName,
       type: roomType,
@@ -299,7 +298,9 @@ export const createRoomCollection = async (req, res) => {
         id: memberId,
       })),
     });
-
+    
+    await registerUserRooms(collectionName, memberIds);
+    
     return res.status(200).json({
       status: 200,
       data: { databaseName, roomDetails },
