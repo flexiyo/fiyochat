@@ -64,6 +64,7 @@ const messageStockSchema = new Schema(
         userId: {
           type: String,
           required: true,
+          unique: true,
         },
         seenAt: {
           type: Date,
