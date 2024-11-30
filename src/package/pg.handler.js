@@ -78,7 +78,7 @@ export const registerUserRooms = async (roomId, memberIds) => {
     await sql`
       UPDATE users
       SET rooms = rooms || to_jsonb(${roomId}::text)
-      WHERE id = ANY(${sql.array(memberIds)}::uuid[])
+      WHERE id = ANY(${memberIds}::uuid[])
     `;
 
     return true;
