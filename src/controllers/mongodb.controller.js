@@ -237,8 +237,6 @@ export const getLatestMessages = async (payload) => {
 };
 
 /* Room Related Controllers */
-import mongoose from "mongoose";
-
 export const createRoomCollection = async (req, res) => {
   try {
     const { roomType, memberIds } = req.body;
