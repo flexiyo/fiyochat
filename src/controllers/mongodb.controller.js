@@ -110,7 +110,7 @@ export const seeMessage = async (payload) => {
 
     await messageStockModel.findOneAndUpdate(
       { "messages.id": messageId },
-      { $push: { "messages.$.seenBy": { userId: senderId } } },
+      { $push: { "seenBy": { userId: senderId } } },
       { new: true }
     );
 
