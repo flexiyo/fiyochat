@@ -29,18 +29,6 @@ export const messageSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  seenBy: [
-    {
-      userId: {
-        type: String,
-        required: true,
-      },
-      seenAt: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
   reactions: [
     {
       userId: {
@@ -71,6 +59,18 @@ const messageStockSchema = new Schema(
       type: [messageSchema],
       default: [],
     },
+    seenBy: [
+      {
+        userId: {
+          type: String,
+          required: true,
+        },
+        seenAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
