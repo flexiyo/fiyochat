@@ -135,3 +135,34 @@ export const deleteUserRoom = async (roomId) => {
     throw new Error(`Error in deleteUserRoom: ${error}`);
   }
 };
+
+export const getChatRoomDetails = async (roomId) => {
+  const sql = postgres(process.env.AUTH_DB_URI);
+
+  try {
+    const result = await sql`
+      SELECT id, name, type, theme, avatar, members
+      FROM chat_rooms
+      WHERE id = ${roomId}::text
+    `;
+
+    if (result.length === 0) {
+      return {
+        message: "Chat room not found",
+      };
+    }
+
+    const room = result[0];
+
+    return {
+      id: room.id,
+      name: room.name,
+      type: room.type,
+      theme: room.theme,
+      avatar: room.avatar,
+      members: room.members,
+    };
+  } catch (error) {
+    throw new Error(`Error in getChatRoomDetails: ${error}`);
+  }
+};

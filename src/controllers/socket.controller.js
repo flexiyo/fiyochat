@@ -7,13 +7,12 @@ import {
   reactToMessage,
   unreactToMessage,
   getLatestMessages,
-  getRoomDetails,
 } from "./mongodb.controller.js";
 
 import { validatePayload } from "../utils/validatePayload.js";
 import { emitToRoom } from "../utils/SocketEventEmitter.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { checkAccessToken } from "../package/pg.handler.js";
+import { checkAccessToken, getChatRoomDetails } from "../package/pg.handler.js";
 
 export const setupSocketHandlers = asyncHandler(async (io) => {
   io.on("connection", async (socket) => {
@@ -58,7 +57,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           socket.join(roomId);
           socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
 
-          const roomDetails = await getRoomDetails(roomId);
+          const roomDetails = await getChatRoomDetails(roomId);
           const { messageStock } = await getLatestMessages({ roomId });
           return { roomDetails, messageStock };
         });
