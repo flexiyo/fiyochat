@@ -110,30 +110,32 @@ export const seeMessage = async (payload) => {
     const messageStockModel = getMessageStockModel(roomId);
 
     const result = await messageStockModel.findOneAndUpdate(
-      { "messages.id": messageId, "seenBy.userId": senderId },
+      { 
+        "messages.id": messageId, 
+        $or: [
+          { "seenBy.userId": senderId },
+          { "messages.id": messageId }
+        ]
+      },
       {
         $set: {
-          "seenBy.$.lastSeenMessageId": messageId,
-          "seenBy.$.seenAt": new Date(),
+          "seenBy.$[user].lastSeenMessageId": messageId,
+          "seenBy.$[user].seenAt": new Date(),
         },
-      },
-      { new: true }
-    );
-
-    if (!result) {
-      await messageStockModel.updateOne(
-        { "messages.id": messageId },
-        {
-          $push: {
-            seenBy: {
-              userId: senderId,
-              lastSeenMessageId: messageId,
-              seenAt: new Date(),
-            },
-          },
+        $push: {
+          seenBy: {
+            userId: senderId,
+            lastSeenMessageId: messageId,
+            seenAt: new Date(),
+          }
         }
-      );
-    }
+      },
+      {
+        arrayFilters: [{ "user.userId": senderId }],
+        upsert: true,
+        new: true
+      }
+    );
 
     return true;
   } catch (error) {
