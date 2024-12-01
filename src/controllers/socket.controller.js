@@ -82,7 +82,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("send_message", async (payload) => {
         try {
-          const requiredFields = ["roomId", "senderId", "content", "messageId"];
+          const requiredFields = ["roomId", "senderId", "content", "type", "messageId"];
           validatePayload(payload, requiredFields);
 
           const result = await addMessage(payload);
