@@ -19,7 +19,7 @@ const getMessageStockModel = (collectionName) => {
 /* Message Related Controllers */
 export const addMessage = async (payload) => {
   try {
-    const { roomId, senderId, content, messageId } = payload;
+    const { roomId, senderId, content, type, messageId } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
@@ -27,6 +27,7 @@ export const addMessage = async (payload) => {
       id: messageId,
       senderId,
       content: content,
+      type,
     };
 
     const lastDocument = await messageStockModel
