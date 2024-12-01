@@ -21,7 +21,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
     if (!accessToken) {
       socket.emit("error", {
         event: "connection",
-        error: "Missing Access Token",
+        error: { name: "ATInvalidError", message: "Tokens missing" },
       });
       socket.disconnect();
       return;
@@ -33,7 +33,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
       if (message !== "ok") {
         socket.emit("error", {
           event: "connection",
-          error: { name: "AccessTokenError", message },
+          error: { name: "ATInvalidError", message },
         });
         socket.disconnect();
         return;
