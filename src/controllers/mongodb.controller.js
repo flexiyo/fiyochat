@@ -110,15 +110,39 @@ export const seeMessage = async (payload) => {
 
     await messageStockModel.findOneAndUpdate(
       { "messages.id": messageId },
-      { $push: { "seenBy": { userId: senderId } } },
-      { new: true }
+      {
+        $set: {
+          "seenBy.$[user].lastSeenMessageId": messageId,
+          "seenBy.$[user].seenAt": new Date(),
+        },
+      },
+      {
+        arrayFilters: [{ "user.userId": senderId }],
+        upsert: true,
+        new: true,
+      }
+    );
+
+    await messageStockModel.updateOne(
+      { "messages.id": messageId },
+      {
+        $push: {
+          seenBy: {
+            userId: senderId,
+            lastSeenMessageId: messageId,
+            seenAt: new Date(),
+          },
+        },
+      },
+      { upsert: true }
     );
 
     return true;
   } catch (error) {
-    throw new Error(`Error in seeMessage: ${error}`);
+    throw new Error(`Error in seeMessage: ${error.message}`);
   }
 };
+
 
 export const replyToMessage = async (payload) => {
   try {

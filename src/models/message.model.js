@@ -17,6 +17,11 @@ export const messageSchema = new Schema({
     type: String,
     required: true,
   },
+  type: {
+    type: String,
+    enum: ["text", "photo", "video", "post", "reel", "link", "gif"],
+    required: true,
+  },
   originalContent: {
     type: String,
     default: null,
@@ -66,6 +71,10 @@ const messageStockSchema = new Schema(
           required: true,
           unique: true,
         },
+        lastSeenMessageId: {
+          type: String,
+          default: null,
+        },
         seenAt: {
           type: Date,
           default: Date.now,
@@ -75,6 +84,7 @@ const messageStockSchema = new Schema(
   },
   { timestamps: true }
 );
+
 messageStockSchema.plugin(autoIncrement, { inc_field: "serial" });
 
 export const MessageStock = model("MessageStock", messageStockSchema);

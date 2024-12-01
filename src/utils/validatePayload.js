@@ -1,7 +1,7 @@
 export const validatePayload = (payload, requiredFields) => {
   requiredFields.forEach((field) => {
     if (!payload[field]) {
-      throw new Error(400, `${field} is required`);
+      return new Error(`${field} is required`);
     }
   });
 };
