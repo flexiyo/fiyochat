@@ -19,7 +19,7 @@ export const messageSchema = new Schema({
   },
   type: {
     type: String,
-    enum: ["text", "photo", "video", "post", "reel", "link", "gif"],
+    enum: ["text", "photo", "video", "post", "clip", "link", "gif"],
     required: true,
   },
   originalContent: {
