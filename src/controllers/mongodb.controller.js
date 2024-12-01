@@ -109,39 +109,41 @@ export const seeMessage = async (payload) => {
 
     const messageStockModel = getMessageStockModel(roomId);
 
-    const result = await messageStockModel.findOneAndUpdate(
-      { 
-        "messages.id": messageId, 
-        $or: [
-          { "seenBy.userId": senderId },
-          { "messages.id": messageId }
-        ]
+    const updatedMessage = await messageStockModel.findOneAndUpdate(
+      {
+        "messages.id": messageId,
+        "seenBy.userId": senderId,
       },
       {
         $set: {
-          "seenBy.$[user].lastSeenMessageId": messageId,
-          "seenBy.$[user].seenAt": new Date(),
+          "seenBy.$.lastSeenMessageId": messageId,
+          "seenBy.$.seenAt": new Date(),
         },
-        $push: {
-          seenBy: {
-            userId: senderId,
-            lastSeenMessageId: messageId,
-            seenAt: new Date(),
-          }
-        }
       },
-      {
-        arrayFilters: [{ "user.userId": senderId }],
-        upsert: true,
-        new: true
-      }
+      { new: true }
     );
+
+    if (!updatedMessage) {
+      await messageStockModel.updateOne(
+        { "messages.id": messageId },
+        {
+          $push: {
+            seenBy: {
+              userId: senderId,
+              lastSeenMessageId: messageId,
+              seenAt: new Date(),
+            },
+          },
+        }
+      );
+    }
 
     return true;
   } catch (error) {
     throw new Error(`Error in seeMessage: ${error}`);
   }
 };
+
 
 export const replyToMessage = async (payload) => {
   try {
