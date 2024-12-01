@@ -139,7 +139,7 @@ export const seeMessage = async (payload) => {
 
     return true;
   } catch (error) {
-    throw new Error(`Error in seeMessage: ${error.message}`);
+    throw new Error(`Error in seeMessage: ${error}`);
   }
 };
 
