@@ -82,18 +82,18 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("send_message", async (payload) => {
         try {
-          const requiredFields = ["roomId", "senderId", "content", "type", "messageId"];
+          const requiredFields = ["roomId", "senderId", "content", "type", "id"];
           validatePayload(payload, requiredFields);
 
           const result = await addMessage(payload);
-          const { roomId, senderId, content, type, messageId } = payload;
+          const { roomId, senderId, content, type, id } = payload;
 
           if (result) {
             emitToRoom(socket, "message_received", roomId, {
               senderId,
               content,
               type,
-              messageId,
+              id,
             });
           }
         } catch (error) {
@@ -104,16 +104,16 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("unsend_message", async (payload) => {
         try {
-          const requiredFields = ["roomId", "senderId", "messageId"];
+          const requiredFields = ["roomId", "senderId", "id"];
           validatePayload(payload, requiredFields);
 
           const result = await removeMessage(payload);
-          const { roomId, senderId, messageId } = payload;
+          const { roomId, senderId, id } = payload;
 
           if (result) {
             emitToRoom(socket, "message_unsent", roomId, {
               senderId,
-              messageId,
+              id,
             });
           }
         } catch (error) {
@@ -132,7 +132,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             "senderId",
             "originalContent",
             "updatedContent",
-            "messageId",
+            "id",
           ];
           validatePayload(payload, requiredFields);
 
@@ -142,7 +142,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             senderId,
             originalContent,
             updatedContent,
-            messageId,
+            id,
           } = payload;
 
           if (result) {
@@ -150,7 +150,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
               senderId,
               originalContent,
               updatedContent,
-              messageId,
+              id,
             });
           }
         } catch (error) {
@@ -161,14 +161,14 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("see_message", async (payload) => {
         try {
-          const requiredFields = ["roomId", "senderId", "messageId"];
+          const requiredFields = ["roomId", "senderId", "id"];
           validatePayload(payload, requiredFields);
 
           const result = await seeMessage(payload);
-          const { roomId, senderId, messageId } = payload;
+          const { roomId, senderId, id } = payload;
 
           if (result) {
-            emitToRoom(socket, "message_seen", roomId, { senderId, messageId });
+            emitToRoom(socket, "message_seen", roomId, { senderId, id });
           }
         } catch (error) {
           socket.emit("error", { event: "see_message", error });
@@ -218,18 +218,18 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const requiredFields = [
             "roomId",
             "senderId",
-            "messageId",
+            "id",
             "reaction",
           ];
           validatePayload(payload, requiredFields);
 
           const result = await reactToMessage(payload);
-          const { roomId, senderId, messageId, reaction } = payload;
+          const { roomId, senderId, id, reaction } = payload;
 
           if (result) {
             emitToRoom(socket, "message_reacted", roomId, {
               senderId,
-              messageId,
+              id,
               reaction,
             });
           }
@@ -247,18 +247,18 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const requiredFields = [
             "roomId",
             "senderId",
-            "messageId",
+            "id",
             "reaction",
           ];
           validatePayload(payload, requiredFields);
 
           const result = await unreactToMessage(payload);
-          const { roomId, senderId, messageId, reaction } = payload;
+          const { roomId, senderId, id, reaction } = payload;
 
           if (result) {
             emitToRoom(socket, "message_unreacted", roomId, {
               senderId,
-              messageId,
+              id,
               reaction,
             });
           }

@@ -19,12 +19,12 @@ const getMessageStockModel = (collectionName) => {
 /* Message Related Controllers */
 export const addMessage = async (payload) => {
   try {
-    const { roomId, senderId, content, type, messageId } = payload;
+    const { roomId, senderId, content, type, id } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
     const messageObject = {
-      id: messageId,
+      id: id,
       senderId,
       content: content,
       type,
@@ -54,13 +54,13 @@ export const addMessage = async (payload) => {
 
 export const removeMessage = async (payload) => {
   try {
-    const { roomId, messageId } = payload;
+    const { roomId, id } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
     const updatedDocument = await messageStockModel.findOneAndUpdate(
-      { "messages.id": messageId },
-      { $pull: { messages: { id: messageId } } },
+      { "messages.id": id },
+      { $pull: { messages: { id: id } } },
       { new: true }
     );
 
@@ -76,12 +76,12 @@ export const removeMessage = async (payload) => {
 
 export const editMessage = async (payload) => {
   try {
-    const { roomId, originalContent, updatedContent, messageId } = payload;
+    const { roomId, originalContent, updatedContent, id } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
     const updatedDocument = await messageStockModel.findOneAndUpdate(
-      { "messages.id": messageId },
+      { "messages.id": id },
       {
         $set: {
           "messages.$.content": updatedContent,
@@ -105,18 +105,18 @@ export const editMessage = async (payload) => {
 
 export const seeMessage = async (payload) => {
   try {
-    const { roomId, senderId, messageId } = payload;
+    const { roomId, senderId, id } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
     const updatedMessage = await messageStockModel.findOneAndUpdate(
       {
-        "messages.id": messageId,
+        "messages.id": id,
         "seenBy.userId": senderId,
       },
       {
         $set: {
-          "seenBy.$.lastSeenMessageId": messageId,
+          "seenBy.$.lastSeenMessageId": id,
           "seenBy.$.seenAt": new Date(),
         },
       },
@@ -125,12 +125,12 @@ export const seeMessage = async (payload) => {
 
     if (!updatedMessage) {
       await messageStockModel.updateOne(
-        { "messages.id": messageId },
+        { "messages.id": id },
         {
           $push: {
             seenBy: {
               userId: senderId,
-              lastSeenMessageId: messageId,
+              lastSeenMessageId: id,
               seenAt: new Date(),
             },
           },
@@ -183,12 +183,12 @@ export const replyToMessage = async (payload) => {
 
 export const reactToMessage = async (payload) => {
   try {
-    const { roomId, senderId, messageId, reaction } = payload;
+    const { roomId, senderId, id, reaction } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
     await messageStockModel.findOneAndUpdate(
-      { "messages.id": messageId },
+      { "messages.id": id },
       {
         $push: {
           "messages.$.reactions": { userId: senderId, content: reaction },
@@ -205,12 +205,12 @@ export const reactToMessage = async (payload) => {
 
 export const unreactToMessage = async (payload) => {
   try {
-    const { roomId, senderId, messageId, reaction } = payload;
+    const { roomId, senderId, id, reaction } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
     await messageStockModel.findOneAndUpdate(
-      { "messages.id": messageId },
+      { "messages.id": id },
       {
         $pull: {
           "messages.$.reactions": { userId: senderId, content: reaction },
