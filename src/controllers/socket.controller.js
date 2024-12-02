@@ -73,7 +73,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           validatePayload(payload, requiredFields);
 
           const { roomId, senderId } = payload;
-          emitToRoom(socket, "typing", roomId, { senderId });
+          emitToRoom(socket, "typing", roomId, { senderId, roomId });
         } catch (error) {
           socket.emit("error", { event: "is_typing", error });
           throw new Error(`Error in is_typing: ${error}`);
@@ -94,6 +94,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
               content,
               type,
               id,
+              roomId,
             });
           }
         } catch (error) {
@@ -114,6 +115,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
             emitToRoom(socket, "message_unsent", roomId, {
               senderId,
               id,
+              roomId,
             });
           }
         } catch (error) {
@@ -151,6 +153,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
               originalContent,
               updatedContent,
               id,
+              roomId,
             });
           }
         } catch (error) {
@@ -168,7 +171,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const { roomId, senderId, id } = payload;
 
           if (result) {
-            emitToRoom(socket, "message_seen", roomId, { senderId, id });
+            emitToRoom(socket, "message_seen", roomId, { senderId, id, roomId });
           }
         } catch (error) {
           socket.emit("error", { event: "see_message", error });
@@ -202,6 +205,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
               parentMessageId,
               replyContent,
               replyMessageId,
+              roomId,
             });
           }
         } catch (error) {
@@ -231,6 +235,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
               senderId,
               id,
               reaction,
+              roomId,
             });
           }
         } catch (error) {
@@ -260,6 +265,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
               senderId,
               id,
               reaction,
+              roomId,
             });
           }
         } catch (error) {
@@ -280,15 +286,14 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const { roomId } = payload;
 
           if (result) {
-            emitToRoom(socket, "messages", roomId, result);
+            emitToRoom(socket, "messages", roomId, { ...result, roomId });
           }
         } catch (error) {
           socket.emit("error", { event: "get_messages", error });
           throw new Error(`Error in get_messages: ${error}`);
         }
       });
-
-      // Handle Disconnection
+      
       socket.on("disconnect", () => {
         if (!socket.user.rooms.length) return;
         socket.user.rooms.forEach((roomId) => {
