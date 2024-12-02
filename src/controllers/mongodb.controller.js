@@ -19,7 +19,7 @@ const getMessageStockModel = (collectionName) => {
 /* Message Related Controllers */
 export const addMessage = async (payload) => {
   try {
-    const { roomId, senderId, content, type, id } = payload;
+    const { roomId, senderId, content, type, id, sentAt } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
@@ -28,6 +28,7 @@ export const addMessage = async (payload) => {
       senderId,
       content: content,
       type,
+      sentAt,
     };
 
     const lastDocument = await messageStockModel
@@ -76,7 +77,7 @@ export const removeMessage = async (payload) => {
 
 export const editMessage = async (payload) => {
   try {
-    const { roomId, originalContent, updatedContent, id } = payload;
+    const { roomId, originalContent, updatedContent, id, } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
@@ -105,7 +106,7 @@ export const editMessage = async (payload) => {
 
 export const seeMessage = async (payload) => {
   try {
-    const { roomId, senderId, id } = payload;
+    const { roomId, senderId, id, seenAt } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
@@ -117,7 +118,7 @@ export const seeMessage = async (payload) => {
       {
         $set: {
           "seenBy.$.lastSeenMessageId": id,
-          "seenBy.$.seenAt": new Date(),
+          "seenBy.$.seenAt": seenAt,
         },
       },
       { new: true }
@@ -144,10 +145,9 @@ export const seeMessage = async (payload) => {
   }
 };
 
-
 export const replyToMessage = async (payload) => {
   try {
-    const { roomId, senderId, parentMessageId, replyContent, replyMessageId } =
+    const { roomId, senderId, parentMessageId, replyContent, replyMessageId, sentAt } =
       payload;
 
     const messageStockModel = getMessageStockModel(roomId);
@@ -157,6 +157,7 @@ export const replyToMessage = async (payload) => {
       senderId,
       content: replyContent,
       parentMessageId: parentMessageId,
+      sentAt,
     };
 
     const lastDocument = await messageStockModel
