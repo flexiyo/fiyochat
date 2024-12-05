@@ -37,7 +37,7 @@ export const addMessage = async (payload) => {
       .limit(1)
       .exec();
 
-    if (lastDocument && lastDocument.messages.length <= 30) {
+    if (lastDocument && lastDocument.messages.length < 30) {
       lastDocument.messages.push(messageObject);
       await lastDocument.save();
     } else {
