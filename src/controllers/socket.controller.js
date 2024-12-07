@@ -280,16 +280,15 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("get_messages", async (payload) => {
         try {
-
           const requiredFields = ["roomId", "skipCount"];
           validatePayload(payload, requiredFields);
 
-          const result = await getMessages(payload);
+          const { messageStock } = await getMessages(payload);
           const { roomId, skipCount } = payload;
 
-          if (result) {
+          if (messageStock) {
             emitToRoom(socket, "messages_got", roomId, {
-              result,
+              messageStock,
               roomId,
               skipCount,
             });
