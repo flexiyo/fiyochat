@@ -287,12 +287,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
           const { roomId, socketId, skipCount } = payload;
 
           if (messageStock) {
-            emitToUser(socket, "messages_got", socketId, {
+            emitToUser(io, "messages_got", socketId, {
               messageStock,
               roomId,
               skipCount,
             });
-
           }
         } catch (error) {
           socket.emit("error", { event: "get_messages", error });
