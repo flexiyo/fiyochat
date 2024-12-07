@@ -293,6 +293,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
               skipCount,
             });
           }
+
+          console.log(messageStock)
         } catch (error) {
           socket.emit("error", { event: "get_messages", error });
           throw new Error(`Error in get_messages: ${error}`);
