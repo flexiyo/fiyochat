@@ -11,7 +11,7 @@ import {
 } from "./mongodb.controller.js";
 
 import { validatePayload } from "../utils/validatePayload.js";
-import { emitToRoom } from "../utils/SocketEventEmitter.js";
+import { emitToRoom, emitToUser } from "../utils/SocketEventEmitter.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { checkAccessToken, getChatRoomDetails } from "../package/pg.handler.js";
 
@@ -280,18 +280,19 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("get_messages", async (payload) => {
         try {
-          const requiredFields = ["roomId", "skipCount"];
+          const requiredFields = ["roomId", "socketId", "skipCount"];
           validatePayload(payload, requiredFields);
 
           const { messageStock } = await getMessages(payload);
-          const { roomId, skipCount } = payload;
+          const { roomId, socketId, skipCount } = payload;
 
           if (messageStock) {
-            emitToRoom(socket, "messages_got", roomId, {
+            emitToUser(socket, "messages_got", socketId, {
               messageStock,
               roomId,
               skipCount,
             });
+
           }
         } catch (error) {
           socket.emit("error", { event: "get_messages", error });

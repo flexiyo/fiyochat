@@ -6,9 +6,9 @@ export const emitToRoom = (socket, event, roomId, response) => {
   }
 };
 
-export const emitToUser = (socket, event, userId, response) => {
+export const emitToUser = (socket, event, socketId, response) => {
   try {
-    socket.broadcast.to(userId).emit(event, response);
+    socket.to(socketId).emit(event, response);
   } catch (error) {
     console.error(`Error emitting event ${event}:`, error);
   }
