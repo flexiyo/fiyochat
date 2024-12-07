@@ -280,7 +280,6 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("get_messages", async (payload) => {
         try {
-          console.log("Payload received for get_messages:", payload);
 
           const requiredFields = ["roomId", "skipCount"];
           validatePayload(payload, requiredFields);
@@ -295,6 +294,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
               skipCount,
             });
           }
+          console.log(`Emittted to ${roomId}: `, result)
         } catch (error) {
           socket.emit("error", { event: "get_messages", error });
           throw new Error(`Error in get_messages: ${error}`);

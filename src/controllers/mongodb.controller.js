@@ -242,8 +242,6 @@ export const getMessages = async (payload) => {
       );
     }
 
-    console.log("In getMessages:", skipCount);
-
     const messageStockModel = getMessageStockModel(roomId);
 
     const messages = await messageStockModel
