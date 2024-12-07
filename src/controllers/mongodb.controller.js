@@ -77,7 +77,7 @@ export const removeMessage = async (payload) => {
 
 export const editMessage = async (payload) => {
   try {
-    const { roomId, originalContent, updatedContent, id, } = payload;
+    const { roomId, originalContent, updatedContent, id } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
@@ -147,8 +147,14 @@ export const seeMessage = async (payload) => {
 
 export const replyToMessage = async (payload) => {
   try {
-    const { roomId, senderId, parentMessageId, replyContent, replyMessageId, sentAt } =
-      payload;
+    const {
+      roomId,
+      senderId,
+      parentMessageId,
+      replyContent,
+      replyMessageId,
+      sentAt,
+    } = payload;
 
     const messageStockModel = getMessageStockModel(roomId);
 
@@ -223,6 +229,31 @@ export const unreactToMessage = async (payload) => {
     return true;
   } catch (error) {
     throw new Error(`Error in unreactToMessage: ${error}`);
+  }
+};
+
+export const getMessages = async (payload) => {
+  try {
+    const { roomId, skipCount } = payload;
+
+    if (!skipCount || skipCount < 1) {
+      throw new Error(
+        "Invalid skipCount value. It must be a positive integer."
+      );
+    }
+
+    const messageStockModel = getMessageStockModel(roomId);
+
+    const messages = await messageStockModel
+      .find({})
+      .sort({ serial: -1 })
+      .skip(skipCount)
+      .limit(1)
+      .exec();
+
+    return messages[0] || null;
+  } catch (error) {
+    throw new Error(`Error in getMessages: ${error}`);
   }
 };
 

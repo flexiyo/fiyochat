@@ -6,6 +6,7 @@ import {
   replyToMessage,
   reactToMessage,
   unreactToMessage,
+  getMessages,
   getLatestMessages,
 } from "./mongodb.controller.js";
 
@@ -66,7 +67,6 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         socket.emit("roomsListResponse", allRoomDetails);
       })();
 
-      // Handle Message Events
       socket.on("is_typing", (payload) => {
         try {
           const requiredFields = ["roomId", "senderId"];
@@ -280,14 +280,18 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("get_messages", async (payload) => {
         try {
-          const requiredFields = ["roomId"];
+          const requiredFields = ["roomId", "skipCount"];
           validatePayload(payload, requiredFields);
 
-          const result = await getLatestMessages(payload);
-          const { roomId } = payload;
+          const result = await getMessages(payload);
+          const { roomId, skipCount } = payload;
 
           if (result) {
-            emitToRoom(socket, "messages", roomId, { ...result, roomId });
+            emitToRoom(socket, "messages", roomId, {
+              ...result,
+              roomId,
+              skipCount,
+            });
           }
         } catch (error) {
           socket.emit("error", { event: "get_messages", error });
@@ -297,6 +301,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("disconnect", () => {
         if (!socket.user.rooms.length) return;
+
         socket.user.rooms.forEach((roomId) => {
           socket.leave(roomId);
           socket.broadcast.to(roomId).emit("user_left", socket.user.id);
