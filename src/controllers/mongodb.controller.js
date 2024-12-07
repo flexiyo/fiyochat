@@ -245,7 +245,7 @@ export const getMessages = async (payload) => {
       .limit(1)
       .exec();
 
-    return { messageStock };
+    return { messageStock: messageStock[0] };
   } catch (error) {
     throw new Error(`Error in getMessages: ${error}`);
   }
