@@ -232,7 +232,7 @@ export const unreactToMessage = async (payload) => {
   }
 };
 
-export const getMessages = async (payload) => {
+export const getMessageStock = async (payload) => {
   try {
     const { roomId, skipCount } = payload;
 
@@ -244,14 +244,14 @@ export const getMessages = async (payload) => {
 
     const messageStockModel = getMessageStockModel(roomId);
 
-    const messages = await messageStockModel
+    const messageStock = await messageStockModel
       .find({})
       .sort({ serial: -1 })
       .skip(skipCount)
       .limit(1)
       .exec();
 
-    return messages[0] || null;
+    return { messageStock };
   } catch (error) {
     throw new Error(`Error in getMessages: ${error}`);
   }
@@ -274,10 +274,6 @@ export const getLatestMessages = async (payload) => {
       .findOne({})
       .sort({ serial: -1 })
       .lean();
-
-    if (messageStock && messageStock.id === roomId) {
-      return { messageStock: null };
-    }
 
     return { messageStock };
   } catch (error) {
