@@ -285,6 +285,8 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
           const result = await getMessages(payload);
           const { roomId, skipCount } = payload;
+          
+          console.log("In get_messages:", payload);
 
           if (result) {
             emitToRoom(socket, "messages", roomId, {
