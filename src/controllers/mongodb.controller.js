@@ -236,12 +236,6 @@ export const getMessages = async (payload) => {
   try {
     const { roomId, skipCount } = payload;
 
-    if (!skipCount || skipCount < 0) {
-      throw new Error(
-        "Invalid skipCount value. It must be a positive integer."
-      );
-    }
-
     const messageStockModel = getMessageStockModel(roomId);
 
     const messageStock = await messageStockModel
