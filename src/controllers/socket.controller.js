@@ -280,26 +280,30 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("get_messages", async (payload) => {
         try {
+          console.log("Payload received for get_messages:", payload);
+      
           const requiredFields = ["roomId", "skipCount"];
           validatePayload(payload, requiredFields);
-
+      
           const result = await getMessages(payload);
           const { roomId, skipCount } = payload;
-          
-          console.log("In get_messages:", payload);
-
+      
+          console.log("Fetched messages for room:", roomId, "SkipCount:", skipCount, "Result:", result);
+      
           if (result) {
             emitToRoom(socket, "messages", roomId, {
               ...result,
               roomId,
               skipCount,
             });
+            console.log("Emitted messages to room:", roomId);
           }
         } catch (error) {
-          socket.emit("error", { event: "get_messages", error });
-          throw new Error(`Error in get_messages: ${error}`);
+          console.error(`Error in get_messages: ${error}`);
+          socket.emit("error", { event: "get_messages", error: error.message || error });
         }
       });
+      
 
       socket.on("disconnect", () => {
         if (!socket.user.rooms.length) return;
