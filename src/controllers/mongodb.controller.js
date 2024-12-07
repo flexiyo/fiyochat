@@ -232,7 +232,7 @@ export const unreactToMessage = async (payload) => {
   }
 };
 
-export const getMessageStock = async (payload) => {
+export const getMessages = async (payload) => {
   try {
     const { roomId, skipCount } = payload;
 
