@@ -31,7 +31,7 @@ app.use(
   })
 );
 
-const allowedOrigins = ["flexiyo://fiyo", "http://localhost:3000", "https://flexiyo.web.app"];
+const allowedOrigins = ["http://localhost", "http://localhost:3000", "https://flexiyo.web.app"];
 
 /** Middlewares */
 app.use((req, res, next) => {
