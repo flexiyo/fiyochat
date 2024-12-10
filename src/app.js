@@ -40,7 +40,7 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Credentials", "true");
     res.header(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, fiyoat, fiyort"
+      "Content-Type, Authorization, app_origin fiyoat, fiyort"
     );
     res.header(
       "Access-Control-Allow-Methods",
