@@ -32,7 +32,7 @@ const allowedOrigins = ["flexiyo://fiyo", "http://localhost:3000", "https://flex
 
 /** Middlewares */
 app.use((req, res, next) => {
-  const origin = req.headers.origin || req.headers["App-Origin"];
+  const origin = req.headers?.origin || req.headers?.app_origin;
   const isApiRoute = req.path.startsWith("/api/v1");
 
   if (isApiRoute && allowedOrigins.includes(origin)) {
