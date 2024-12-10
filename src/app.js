@@ -14,10 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(",") || [
-      "http://localhost:8000",
-      "https://flexiyo.web.app",
-    ],
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || allowedOrigins,
     methods: ["GET", "POST"],
   },
 });
@@ -31,11 +28,11 @@ app.use(
   })
 );
 
-const allowedOrigins = ["capacitor://localhost", "http://localhost:3000", "https://flexiyo.web.app"];
+const allowedOrigins = ["flexiyo://fiyo", "http://localhost:3000", "https://flexiyo.web.app"];
 
 /** Middlewares */
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
+  const origin = req.headers.origin || req.headers["App-Origin"];
   const isApiRoute = req.path.startsWith("/api/v1");
 
   if (isApiRoute && allowedOrigins.includes(origin)) {
