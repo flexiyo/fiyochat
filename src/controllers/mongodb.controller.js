@@ -25,7 +25,7 @@ export const addMessage = async (payload) => {
     const messageStockModel = getMessageStockModel(roomId);
 
     const messageObject = {
-      id: id,
+      id,
       senderId,
       content: content,
       type,
@@ -62,7 +62,7 @@ export const removeMessage = async (payload) => {
 
     const updatedDocument = await messageStockModel.findOneAndUpdate(
       { "messages.id": id },
-      { $pull: { messages: { id: id } } },
+      { $pull: { messages: { id } } },
       { new: true }
     );
 

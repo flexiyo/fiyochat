@@ -2,26 +2,22 @@
   "name": "fiyochat",
   "version": "1.0.0",
   "description": "Flexiyo Chat Service",
-  "main": "index.js",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "format": "npx prettier . --write",
-    "push": "git add . && git commit -m date && git push origin master",
-    "force-push": "git add . && git commit -m date && git push --force origin master",
-    "pull": "git pull origin master",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
-  "type": "module",
+  "keywords": [
+    "flexiyo",
+    "api",
+    "chat"
+  ],
   "author": "Kaushal Krishna",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.637.0",
-    "aws-sdk": "^2.1687.0",
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.1",
     "mongoose-sequence": "^6.0.1",
@@ -29,5 +25,8 @@
     "nodemon": "^3.1.0",
     "postgres": "^3.4.5",
     "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }
