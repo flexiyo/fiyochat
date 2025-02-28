@@ -8,7 +8,7 @@ import roomRouter from "./routes/room.routes.js";
 
 dotenv.config();
 
-const allowedOrigins = ["flexiyo://fiyo", "https://flexiyo.web.app"];
+const allowedOrigins = ["flexiyo://fiyo", "https://flexiyo.web.app", "http://localhost:3000"];
 
 /** Configurations */
 const app = express();
