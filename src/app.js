@@ -8,14 +8,14 @@ import roomRouter from "./routes/room.routes.js";
 
 dotenv.config();
 
-const allowedOrigins = ["flexiyo://fiyo", "https://flexiyo.web.app", "http://localhost:3000"];
+const allowedOrigins = process.env.ALLOWED_ORIGINS;
 
 /** Configurations */
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.ALLOWED_ORIGINS?.split(",") || allowedOrigins,
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
   },
 });
