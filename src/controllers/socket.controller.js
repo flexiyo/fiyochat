@@ -9,7 +9,6 @@ import {
   getMessages,
   getLatestMessages,
 } from "./mongodb.controller.js";
-
 import { validatePayload } from "../utils/validatePayload.js";
 import { emitToRoom, emitToUser } from "../utils/SocketEventEmitter.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -29,43 +28,39 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
     }
 
     try {
-      const isValidAT = await checkAccessToken({ access_token, device_id });
-
-      if (!isValidAT) {
+      const userData = await checkAccessToken({ access_token, device_id });
+      if (!userData) {
         socket.emit("error", { event: "connection", message: "ATInvalidError" });
         socket.disconnect();
         return;
       }
+      socket.user = userData;
 
-      socket.user = data;
-
-      if (!socket.user?.rooms) {
+      if (!Array.isArray(socket.user?.rooms)) {
         socket.emit("error", { event: "connection", message: "RoomsNotFoundError" });
         socket.disconnect();
         return;
       }
 
       let allRoomDetails = [];
-
-      (async () => {
-        const roomDetailsPromises = socket.user?.rooms?.map(async (roomId) => {
+      try {
+        const roomDetailsPromises = (socket.user.rooms || []).map(async (roomId) => {
           socket.join(roomId);
           socket.broadcast.to(roomId).emit("user_joined", socket.user.id);
-
           const roomDetails = await getChatRoomDetails(roomId);
           const { messageStock } = await getLatestMessages({ roomId });
           return { roomDetails, messageStock };
         });
-
-        allRoomDetails = await Promise.all(roomDetailsPromises || []);
+        allRoomDetails = await Promise.all(roomDetailsPromises);
         socket.emit("roomsListResponse", allRoomDetails);
-      })();
+      } catch (error) {
+        SocketError(socket, error, "rooms_initialization");
+      }
 
       socket.on("is_typing", (payload) => {
         try {
           const requiredFields = ["roomId", "senderId"];
           validatePayload(payload, requiredFields);
-
           const { roomId, senderId } = payload;
           emitToRoom(socket, "typing", roomId, { senderId, roomId });
         } catch (error) {
@@ -75,28 +70,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("send_message", async (payload) => {
         try {
-          const requiredFields = [
-            "roomId",
-            "senderId",
-            "content",
-            "type",
-            "id",
-            "sentAt",
-          ];
+          const requiredFields = ["roomId", "senderId", "content", "type", "id", "sentAt"];
           validatePayload(payload, requiredFields);
-
           const result = await addMessage(payload);
-          const { roomId, senderId, content, type, id, sentAt } = payload;
-
           if (result) {
-            emitToRoom(socket, "message_received", roomId, {
-              senderId,
-              content,
-              type,
-              id,
-              roomId,
-              sentAt,
-            });
+            emitToRoom(socket, "message_received", payload.roomId, payload);
           }
         } catch (error) {
           return SocketError(socket, error, "send_message");
@@ -107,16 +85,9 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         try {
           const requiredFields = ["roomId", "senderId", "id"];
           validatePayload(payload, requiredFields);
-
           const result = await removeMessage(payload);
-          const { roomId, senderId, id } = payload;
-
           if (result) {
-            emitToRoom(socket, "message_unsent", roomId, {
-              senderId,
-              id,
-              roomId,
-            });
+            emitToRoom(socket, "message_unsent", payload.roomId, payload);
           }
         } catch (error) {
           return SocketError(socket, error, "unsend_message");
@@ -125,27 +96,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("edit_message", async (payload) => {
         try {
-          const requiredFields = [
-            "roomId",
-            "senderId",
-            "originalContent",
-            "updatedContent",
-            "id",
-          ];
+          const requiredFields = ["roomId", "senderId", "originalContent", "updatedContent", "id"];
           validatePayload(payload, requiredFields);
-
           const result = await editMessage(payload);
-          const { roomId, senderId, originalContent, updatedContent, id } =
-            payload;
-
           if (result) {
-            emitToRoom(socket, "message_edited", roomId, {
-              senderId,
-              originalContent,
-              updatedContent,
-              id,
-              roomId,
-            });
+            emitToRoom(socket, "message_edited", payload.roomId, payload);
           }
         } catch (error) {
           return SocketError(socket, error, "edit_message");
@@ -156,17 +111,9 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         try {
           const requiredFields = ["roomId", "senderId", "id", "seenAt"];
           validatePayload(payload, requiredFields);
-
           const result = await seeMessage(payload);
-          const { roomId, senderId, id, seenAt } = payload;
-
           if (result) {
-            emitToRoom(socket, "message_seen", roomId, {
-              senderId,
-              id,
-              roomId,
-              seenAt,
-            });
+            emitToRoom(socket, "message_seen", payload.roomId, payload);
           }
         } catch (error) {
           return SocketError(socket, error, "see_message");
@@ -175,35 +122,11 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
 
       socket.on("reply_to_message", async (payload) => {
         try {
-          const requiredFields = [
-            "roomId",
-            "senderId",
-            "parentMessageId",
-            "replyContent",
-            "replyMessageId",
-            "sentAt",
-          ];
+          const requiredFields = ["roomId", "senderId", "parentMessageId", "replyContent", "replyMessageId", "sentAt"];
           validatePayload(payload, requiredFields);
-
           const result = await replyToMessage(payload);
-          const {
-            roomId,
-            senderId,
-            parentMessageId,
-            replyContent,
-            replyMessageId,
-            sentAt,
-          } = payload;
-
           if (result) {
-            emitToRoom(socket, "message_replied", roomId, {
-              senderId,
-              parentMessageId,
-              replyContent,
-              replyMessageId,
-              roomId,
-              sentAt,
-            });
+            emitToRoom(socket, "message_replied", payload.roomId, payload);
           }
         } catch (error) {
           return SocketError(socket, error, "reply_to_message");
@@ -214,17 +137,9 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         try {
           const requiredFields = ["roomId", "senderId", "id", "reaction"];
           validatePayload(payload, requiredFields);
-
           const result = await reactToMessage(payload);
-          const { roomId, senderId, id, reaction } = payload;
-
           if (result) {
-            emitToRoom(socket, "message_reacted", roomId, {
-              senderId,
-              id,
-              reaction,
-              roomId,
-            });
+            emitToRoom(socket, "message_reacted", payload.roomId, payload);
           }
         } catch (error) {
           return SocketError(socket, error, "react_to_message");
@@ -235,17 +150,9 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         try {
           const requiredFields = ["roomId", "senderId", "id", "reaction"];
           validatePayload(payload, requiredFields);
-
           const result = await unreactToMessage(payload);
-          const { roomId, senderId, id, reaction } = payload;
-
           if (result) {
-            emitToRoom(socket, "message_unreacted", roomId, {
-              senderId,
-              id,
-              reaction,
-              roomId,
-            });
+            emitToRoom(socket, "message_unreacted", payload.roomId, payload);
           }
         } catch (error) {
           return SocketError(socket, error, "unreact_to_message");
@@ -256,15 +163,12 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         try {
           const requiredFields = ["roomId", "socketId", "skipCount"];
           validatePayload(payload, requiredFields);
-
           const { messageStock } = await getMessages(payload);
-          const { roomId, socketId, skipCount } = payload;
-
           if (messageStock) {
-            emitToUser(io, "messages_got", socketId, {
+            emitToUser(io, "messages_got", payload.socketId, {
               messageStock,
-              roomId,
-              skipCount,
+              roomId: payload.roomId,
+              skipCount: payload.skipCount,
             });
           }
         } catch (error) {
@@ -273,8 +177,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
       });
 
       socket.on("disconnect", () => {
-        if (!socket.user.rooms.length) return;
-
+        if (!socket.user?.rooms?.length) return;
         socket.user.rooms.forEach((roomId) => {
           socket.leave(roomId);
           socket.broadcast.to(roomId).emit("user_left", socket.user.id);
@@ -283,7 +186,6 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
     } catch (error) {
       SocketError(socket, error, "connection");
       socket.disconnect();
-      return;
     }
   });
 });
