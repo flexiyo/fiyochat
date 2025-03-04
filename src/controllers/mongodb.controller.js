@@ -285,12 +285,20 @@ export const createChatRoom = async (req, res) => {
   try {
     const { roomType, memberIds } = req.body;
 
+    if (!roomType) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "roomType is required")
+      );
+    }
     if (!Array.isArray(memberIds) || memberIds.length === 0) {
-      return res.status(400).json({
-        status: 400,
-        data: null,
-        message: "Invalid or missing memberIds array.",
-      });
+      return res.status(400).json(
+        new ApiResponse(400, null, "Invalid or missing memberIds array")
+      );
+    }
+    if (memberIds.some(id => typeof id !== "string")) {
+      return res.status(400).json(
+        new ApiResponse(400, null, "memberIds must be an array of strings")
+      );
     }
 
     const adminDb = mongoose.connection.db.admin();
@@ -313,18 +321,15 @@ export const createChatRoom = async (req, res) => {
       databaseName = generateDatabaseName();
       const db = mongoose.connection.useDb(databaseName);
       collectionName = generateCollectionName(databaseName);
-
       await db.createCollection(collectionName);
     } else {
       const db = mongoose.connection.useDb(databaseName);
-
       const collections = await db.listCollections();
 
       if (collections.length >= 1000) {
         databaseName = generateDatabaseName(databaseName);
         const newDb = mongoose.connection.useDb(databaseName);
         collectionName = generateCollectionName(databaseName);
-
         await newDb.createCollection(collectionName);
       } else {
         collectionName = generateCollectionName(databaseName);
@@ -334,17 +339,15 @@ export const createChatRoom = async (req, res) => {
 
     await registerUserRoom(collectionName, { roomType, memberIds });
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { roomId: collectionName },
-          "Room created successfully."
-        )
-      );
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        { roomId: collectionName },
+        "Room created successfully"
+      )
+    );
   } catch (error) {
-    return ApiError(res, error, "Error in createChatRoom.");
+    return ApiError(res, error, "Error in createChatRoom");
   }
 };
 
