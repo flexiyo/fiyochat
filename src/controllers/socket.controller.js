@@ -23,32 +23,26 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
     const device_id = socket.handshake.auth?.fiyodid;
 
     if (!access_token || !device_id) {
-      return SocketError(
-        socket,
-        error,
-        "connection",
-        "HeadersMissing: 'fiyoat' or 'fiyodid'",
-        true
-      );
+      socket.emit("error", { "connection, error: { "HeadersMissing: 'fiyoat' or 'fiyodid'" } });
+      socket.disconnect();
+      return;
     }
 
     try {
       const isValidAT = await checkAccessToken({ access_token, device_id });
 
       if (!isValidAT) {
-        return SocketError(socket, error, "connection", "ATInvalidError", true);
+        socket.emit("error", { "connection, error: { "ATInvalidError" } });
+        socket.disconnect();
+        return;
       }
 
       socket.user = data;
 
       if (!socket.user?.rooms) {
-        return SocketError(
-          socket,
-          error,
-          "connection",
-          "RoomsNotFoundError",
-          true
-        );
+        socket.emit("error", { "connection, error: { "RoomsNotFoundError" } });
+        socket.disconnect();
+        return;
       }
 
       let allRoomDetails = [];
@@ -287,7 +281,9 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
         });
       });
     } catch (error) {
-      return SocketError(socket, error, "connection", null, true);
+      SocketError(socket, error, "connection");
+      socket.disconnect();
+      return;
     }
   });
 });
