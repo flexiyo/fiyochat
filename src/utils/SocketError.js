@@ -4,5 +4,5 @@ export const SocketError = (
   event,
 ) => {
   console.error(`Error in ${event}.`, error);
-  socket.emit("error", { event, error: { "Something went wrong." } });
+  socket.emit("error", { event, error: "Something went wrong." });
 };
