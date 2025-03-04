@@ -40,7 +40,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
       socket.user = data;
 
       if (!socket.user?.rooms) {
-        socket.emit("error", { event: "connection", error: { "RoomsNotFoundError" } });
+        socket.emit("error", { event: "connection", message: "RoomsNotFoundError" });
         socket.disconnect();
         return;
       }
