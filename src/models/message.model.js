@@ -86,4 +86,8 @@ const messageStockSchema = new Schema(
 
 messageStockSchema.plugin(autoIncrement, { inc_field: "serial" });
 
+messageStockSchema.index({ "messages.id": 1 });
+messageStockSchema.index({ "messages.sentAt": -1 });
+messageStockSchema.index({ serial: -1 });
+
 export const MessageStock = model("MessageStock", messageStockSchema);
