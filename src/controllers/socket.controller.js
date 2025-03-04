@@ -32,7 +32,7 @@ export const setupSocketHandlers = asyncHandler(async (io) => {
       const isValidAT = await checkAccessToken({ access_token, device_id });
 
       if (!isValidAT) {
-        socket.emit("error", { event: "connection", error: { "ATInvalidError" } });
+        socket.emit("error", { event: "connection", message: "ATInvalidError" } });
         socket.disconnect();
         return;
       }
